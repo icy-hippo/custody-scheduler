@@ -6,6 +6,7 @@ import { collection, query, where, getDocs, orderBy, doc, getDoc, deleteDoc } fr
 import AddEvent from '../components/AddEvent';
 import CustodySetup from '../components/CustodySetup';
 import FamilySetup from '../components/FamilySetup';
+import CustodyCalendar from '../components/CustodyCalendar';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -233,7 +234,12 @@ function ParentDashboard() {
             👨‍👩‍👧 {familyId ? `Family: ${familyId}` : 'Set Up Family'}
           </button>
         </div>
-
+        {/* Custody Calendar */}
+          {custodySchedule && (
+            <div style={{ marginBottom: '24px' }}>
+              <CustodyCalendar custodySchedule={custodySchedule} />
+            </div>
+)}
         {/* Events List */}
         <div style={{
           background: 'white',
