@@ -7,17 +7,20 @@ import AddEvent from '../components/AddEvent';
 import CustodySetup from '../components/CustodySetup';
 import FamilySetup from '../components/FamilySetup';
 import CustodyCalendar from '../components/CustodyCalendar';
+import ParentLinking from '../components/ParentLinking';
 
 function ParentDashboard() {
   const navigate = useNavigate();
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [showCustodySetup, setShowCustodySetup] = useState(false);
   const [showFamilySetup, setShowFamilySetup] = useState(false);
+  const [showParentLinking, setShowParentLinking] = useState(false);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [custodySchedule, setCustodySchedule] = useState(null);
   const [familyId, setFamilyId] = useState(null);
+  const [linkedParentId, setLinkedParentId] = useState(null);
 
   // Listen for auth state changes
   useEffect(() => {
@@ -86,8 +89,14 @@ function ParentDashboard() {
     
     try {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (userDoc.exists() && userDoc.data().familyId) {
-        setFamilyId(userDoc.data().familyId);
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        if (userData.familyId) {
+          setFamilyId(userData.familyId);
+        }
+        if (userData.linkedParentId) {
+          setLinkedParentId(userData.linkedParentId);
+        }
       }
     } catch (err) {
       console.error('Error loading family:', err);
@@ -233,13 +242,35 @@ function ParentDashboard() {
           >
             👨‍👩‍👧 {familyId ? `Family: ${familyId}` : 'Set Up Family'}
           </button>
+
+          <button
+            onClick={() => setShowParentLinking(true)}
+            style={{
+              padding: '16px 32px',
+              background: linkedParentId ? 'white' : '#ff6b9d',
+              color: linkedParentId ? '#ff6b9d' : 'white',
+              border: linkedParentId ? '2px solid #ff6b9d' : 'none',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              boxShadow: linkedParentId ? 'none' : '0 4px 12px rgba(255, 107, 157, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            👥 {linkedParentId ? 'Co-Parent Linked' : 'Link Co-Parent'}
+          </button>
         </div>
+
         {/* Custody Calendar */}
-          {custodySchedule && (
-            <div style={{ marginBottom: '24px' }}>
-              <CustodyCalendar custodySchedule={custodySchedule} />
-            </div>
-)}
+        {custodySchedule && (
+          <div style={{ marginBottom: '24px' }}>
+            <CustodyCalendar custodySchedule={custodySchedule} />
+          </div>
+        )}
+
         {/* Events List */}
         <div style={{
           background: 'white',
@@ -341,6 +372,18 @@ function ParentDashboard() {
             loadFamily();
             loadEvents();
           }}
+        />
+      )}
+
+      {/* Parent Linking Modal */}
+      {showParentLinking && (
+        <ParentLinking
+          onClose={() => setShowParentLinking(false)}
+          onParentLinked={() => {
+            loadFamily();
+            loadEvents();
+          }}
+          familyId={familyId}
         />
       )}
     </div>
