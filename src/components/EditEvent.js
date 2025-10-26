@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
-import { db } from '../firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { db, auth } from '../firebase';
+import { collection, updateDoc, doc, getDoc } from 'firebase/firestore';
 
-function EditEvent({ event, onClose, onEventUpdated }) {
-  const [title, setTitle] = useState(event.title);
-  const [date, setDate] = useState(event.date);
-  const [time, setTime] = useState(event.time || '');
-  const [location, setLocation] = useState(event.location || '');
-  const [notes, setNotes] = useState(event.notes || '');
-  const [category, setCategory] = useState(event.category);
+function EditEvent({ eventId, onClose, onEventUpdated }) {
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [location, setLocation] = useState('');
+  const [notes, setNotes] = useState('');
+  const [category, setCategory] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const categories = [
     { name: 'School', color: '#667eea', icon: '📚' },
@@ -20,6 +20,30 @@ function EditEvent({ event, onClose, onEventUpdated }) {
     { name: 'Family', color: '#fa709a', icon: '👨‍👩‍👧' },
     { name: 'Other', color: '#a8edea', icon: '📌' }
   ];
+
+  // Load event data
+  useEffect(() => {
+    const loadEvent = async () => {
+      try {
+        const eventDoc = await getDoc(doc(db, 'events', eventId));
+        if (eventDoc.exists()) {
+          const data = eventDoc.data();
+          setTitle(data.title);
+          setDate(data.date);
+          setTime(data.time || '');
+          setLocation(data.location || '');
+          setNotes(data.notes || '');
+          setCategory(data.category || '');
+        }
+      } catch (err) {
+        setError('Failed to load event: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvent();
+  }, [eventId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +59,7 @@ function EditEvent({ event, onClose, onEventUpdated }) {
     try {
       const selectedCategory = categories.find(c => c.name === category);
 
-      const eventData = {
+      const updatedData = {
         title,
         date,
         time,
@@ -47,11 +71,11 @@ function EditEvent({ event, onClose, onEventUpdated }) {
         updatedAt: new Date()
       };
 
-      await updateDoc(doc(db, 'events', event.id), eventData);
-      
+      await updateDoc(doc(db, 'events', eventId), updatedData);
+
       if (onEventUpdated) onEventUpdated();
       if (onClose) onClose();
-      
+
       alert('Event updated successfully!');
     } catch (err) {
       setError(err.message);
@@ -59,6 +83,34 @@ function EditEvent({ event, onClose, onEventUpdated }) {
       setLoading(false);
     }
   };
+
+  if (loading && !title) {
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000
+      }}>
+        <div style={{
+          background: 'white',
+          borderRadius: '16px',
+          padding: '32px',
+          maxWidth: '500px',
+          width: '100%',
+          textAlign: 'center'
+        }}>
+          <p style={{ color: '#666' }}>Loading event...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -110,6 +162,7 @@ function EditEvent({ event, onClose, onEventUpdated }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              placeholder="e.g., Soccer Practice"
               style={{
                 width: '100%',
                 padding: '12px',
@@ -198,6 +251,7 @@ function EditEvent({ event, onClose, onEventUpdated }) {
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
+              placeholder="e.g., Mom's house, School gym"
               style={{
                 width: '100%',
                 padding: '12px',
@@ -217,6 +271,7 @@ function EditEvent({ event, onClose, onEventUpdated }) {
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              placeholder="Any additional details..."
               rows="3"
               style={{
                 width: '100%',
@@ -244,23 +299,42 @@ function EditEvent({ event, onClose, onEventUpdated }) {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '14px',
-              background: loading ? '#ccc' : '#667eea',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: loading ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loading ? 'Updating...' : 'Update Event'}
-          </button>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                flex: 1,
+                padding: '14px',
+                background: loading ? '#ccc' : '#667eea',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {loading ? 'Updating...' : 'Update Event'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                flex: 1,
+                padding: '14px',
+                background: 'white',
+                color: '#667eea',
+                border: '2px solid #667eea',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>

@@ -8,6 +8,7 @@ import CustodySetup from '../components/CustodySetup';
 import FamilySetup from '../components/FamilySetup';
 import CustodyCalendar from '../components/CustodyCalendar';
 import ParentLinking from '../components/ParentLinking';
+import EditEvent from '../components/EditEvent';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -15,6 +16,8 @@ function ParentDashboard() {
   const [showCustodySetup, setShowCustodySetup] = useState(false);
   const [showFamilySetup, setShowFamilySetup] = useState(false);
   const [showParentLinking, setShowParentLinking] = useState(false);
+  const [showEditEvent, setShowEditEvent] = useState(false);
+  const [editingEventId, setEditingEventId] = useState(null);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -116,6 +119,11 @@ function ParentDashboard() {
       console.error('Error deleting event:', err);
       alert('Failed to delete event. Please try again.');
     }
+  };
+
+  const openEditEvent = (eventId) => {
+    setEditingEventId(eventId);
+    setShowEditEvent(true);
   };
 
   // Load events, custody, and family when user is ready
@@ -327,6 +335,21 @@ function ParentDashboard() {
                     {event.category}
                   </div>
                   <button
+                    onClick={() => openEditEvent(event.id)}
+                    style={{
+                      background: '#4facfe',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
                     onClick={() => deleteEvent(event.id)}
                     style={{
                       background: '#ff4444',
@@ -384,6 +407,18 @@ function ParentDashboard() {
             loadEvents();
           }}
           familyId={familyId}
+        />
+      )}
+
+      {/* Edit Event Modal */}
+      {showEditEvent && editingEventId && (
+        <EditEvent
+          eventId={editingEventId}
+          onClose={() => {
+            setShowEditEvent(false);
+            setEditingEventId(null);
+          }}
+          onEventUpdated={loadEvents}
         />
       )}
     </div>
