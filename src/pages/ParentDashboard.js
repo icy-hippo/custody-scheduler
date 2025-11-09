@@ -9,6 +9,7 @@ import FamilySetup from '../components/FamilySetup';
 import CustodyCalendar from '../components/CustodyCalendar';
 import ParentLinking from '../components/ParentLinking';
 import EditEvent from '../components/EditEvent';
+import NotificationCenter from '../components/NotificationCenter';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -170,23 +171,26 @@ function ParentDashboard() {
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
           <div>
-            <h1 style={{ margin: 0, color: '#333' }}>Parent Dashboard</h1>
-            <p style={{ margin: '8px 0 0 0', color: '#666' }}>Manage your family's schedule</p>
-          </div>
-          <button 
-            onClick={handleLogout}
-            style={{
-              padding: '10px 24px',
-              background: 'white',
-              color: '#667eea',
-              border: '2px solid #667eea',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            Logout
-          </button>
+  <h1 style={{ margin: 0, color: '#333' }}>Parent Dashboard</h1>
+  <p style={{ margin: '8px 0 0 0', color: '#666' }}>Manage your family's schedule</p>
+</div>
+<div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+  <NotificationCenter userId={user.uid} />
+  <button 
+    onClick={handleLogout}
+    style={{
+      padding: '10px 24px',
+      background: 'white',
+      color: '#667eea',
+      border: '2px solid #667eea',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontWeight: 'bold'
+    }}
+  >
+    Logout
+  </button>
+</div>
         </div>
 
         {/* Action Buttons */}
