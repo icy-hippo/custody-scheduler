@@ -27,6 +27,12 @@ function ParentDashboard() {
   const [familyId, setFamilyId] = useState(null);
   const [linkedParentId, setLinkedParentId] = useState(null);
 
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterDateRange, setFilterDateRange] = useState({ start: '', end: '' });
+  const [sortBy, setSortBy] = useState('date');
+
   // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -141,6 +147,50 @@ function ParentDashboard() {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   };
+
+  // Get filtered and sorted events
+  const getFilteredAndSortedEvents = () => {
+    let filtered = events;
+
+    // Search filter (title + location)
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(event =>
+        event.title.toLowerCase().includes(term) ||
+        (event.location && event.location.toLowerCase().includes(term))
+      );
+    }
+
+    // Category filter
+    if (filterCategory) {
+      filtered = filtered.filter(event => event.category === filterCategory);
+    }
+
+    // Date range filter
+    if (filterDateRange.start) {
+      filtered = filtered.filter(event => event.date >= filterDateRange.start);
+    }
+    if (filterDateRange.end) {
+      filtered = filtered.filter(event => event.date <= filterDateRange.end);
+    }
+
+    // Sorting
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'title':
+          return a.title.localeCompare(b.title);
+        case 'category':
+          return a.category.localeCompare(b.category);
+        case 'date':
+        default:
+          return new Date(a.date) - new Date(b.date);
+      }
+    });
+
+    return sorted;
+  };
+
+  const filteredEvents = getFilteredAndSortedEvents();
 
   // Show loading while checking auth
   if (!user) {
@@ -286,6 +336,191 @@ function ParentDashboard() {
           </div>
         )}
 
+        {/* Search and Filter Bar */}
+        {events.length > 0 && (
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            marginBottom: '24px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ margin: '0 0 16px 0', color: '#333', fontSize: '16px' }}>
+              🔍 Search & Filter Events
+            </h3>
+
+            {/* Search Input */}
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by title or location..."
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    style={{
+                      padding: '12px 16px',
+                      background: '#f5f7fa',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      color: '#666'
+                    }}
+                  >
+                    ✕ Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Category Filter */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500', fontSize: '14px' }}>
+                Category
+              </label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setFilterCategory('')}
+                  style={{
+                    padding: '8px 16px',
+                    background: filterCategory === '' ? '#667eea' : 'white',
+                    color: filterCategory === '' ? 'white' : '#667eea',
+                    border: filterCategory === '' ? 'none' : '2px solid #667eea',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    fontSize: '14px'
+                  }}
+                >
+                  All
+                </button>
+                {['School', 'Sports', 'Medical', 'Activities', 'Family', 'Other'].map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setFilterCategory(filterCategory === category ? '' : category)}
+                    style={{
+                      padding: '8px 16px',
+                      background: filterCategory === category ? '#667eea' : 'white',
+                      color: filterCategory === category ? 'white' : '#667eea',
+                      border: filterCategory === category ? 'none' : '2px solid #667eea',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      fontSize: '14px'
+                    }}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Date Range Filter */}
+            <div style={{ marginBottom: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500', fontSize: '14px' }}>
+                  From Date
+                </label>
+                <input
+                  type="date"
+                  value={filterDateRange.start}
+                  onChange={(e) => setFilterDateRange({ ...filterDateRange, start: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500', fontSize: '14px' }}>
+                  To Date
+                </label>
+                <input
+                  type="date"
+                  value={filterDateRange.end}
+                  onChange={(e) => setFilterDateRange({ ...filterDateRange, end: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Sort and Clear Buttons */}
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <label style={{ color: '#666', fontWeight: '500', fontSize: '14px' }}>Sort by:</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="date">Date</option>
+                  <option value="title">Title</option>
+                  <option value="category">Category</option>
+                </select>
+              </div>
+
+              {(searchTerm || filterCategory || filterDateRange.start || filterDateRange.end || sortBy !== 'date') && (
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setFilterCategory('');
+                    setFilterDateRange({ start: '', end: '' });
+                    setSortBy('date');
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    background: '#f5f7fa',
+                    color: '#666',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    fontSize: '14px'
+                  }}
+                >
+                  Clear All Filters
+                </button>
+              )}
+            </div>
+
+            {/* Results Summary */}
+            {events.length > 0 && (
+              <div style={{ marginTop: '12px', color: '#888', fontSize: '14px' }}>
+                Showing {filteredEvents.length} of {events.length} events
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Events List */}
         <div style={{
           background: 'white',
@@ -302,9 +537,14 @@ function ParentDashboard() {
               <p style={{ fontSize: '48px', margin: '0 0 16px 0' }}>📅</p>
               <p style={{ margin: 0 }}>No events yet. Click "Add New Event" to get started!</p>
             </div>
+          ) : filteredEvents.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+              <p style={{ fontSize: '48px', margin: '0 0 16px 0' }}>🔍</p>
+              <p style={{ margin: 0 }}>No events match your filters. Try adjusting your search or filters.</p>
+            </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {events.map(event => (
+              {filteredEvents.map(event => (
                 <div 
                   key={event.id}
                   style={{
