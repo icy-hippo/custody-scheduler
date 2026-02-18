@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, orderBy, doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, doc, getDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import AddEvent from '../components/AddEvent';
 import CustodySetup from '../components/CustodySetup';
 import FamilySetup from '../components/FamilySetup';
@@ -32,6 +32,11 @@ function ParentDashboard() {
   const [filterCategory, setFilterCategory] = useState('');
   const [filterDateRange, setFilterDateRange] = useState({ start: '', end: '' });
   const [sortBy, setSortBy] = useState('date');
+
+  // Delete scope dialog state for recurring events
+  const [showDeleteScopeDialog, setShowDeleteScopeDialog] = useState(false);
+  const [deleteEventData, setDeleteEventData] = useState(null);
+  const [deleteScope, setDeleteScope] = useState('THIS_ONLY');
 
   // Listen for auth state changes
   useEffect(() => {
@@ -115,14 +120,78 @@ function ParentDashboard() {
   };
 
   const deleteEvent = async (eventId) => {
-    if (!window.confirm('Are you sure you want to delete this event?')) {
-      return;
-    }
-
     try {
-      await deleteDoc(doc(db, 'events', eventId));
+      // Load the event to check if it's recurring
+      const eventDoc = await getDoc(doc(db, 'events', eventId));
+      if (!eventDoc.exists()) return;
+
+      const eventData = eventDoc.data();
+
+      // If recurring, show scope dialog; otherwise delete immediately
+      if (eventData.isRecurring) {
+        setDeleteEventData({ id: eventId, ...eventData });
+        setDeleteScope('THIS_ONLY');
+        setShowDeleteScopeDialog(true);
+      } else {
+        if (!window.confirm('Are you sure you want to delete this event?')) {
+          return;
+        }
+        await performDelete(eventId, 'THIS_ONLY', null, null);
+      }
+    } catch (err) {
+      console.error('Error preparing event deletion:', err);
+      alert('Failed to delete event. Please try again.');
+    }
+  };
+
+  const performDelete = async (eventId, scope, recurringGroupId, instanceIndex) => {
+    try {
+      if (scope === 'THIS_ONLY') {
+        // Delete just this event
+        await deleteDoc(doc(db, 'events', eventId));
+      } else if (scope === 'THIS_AND_FOLLOWING') {
+        // Delete this event and all following instances
+        const batch = writeBatch(db);
+
+        // Get all events in the recurring series
+        const allInstancesQuery = query(
+          collection(db, 'events'),
+          where('recurringEventGroupId', '==', recurringGroupId)
+        );
+        const allInstancesSnapshot = await getDocs(allInstancesQuery);
+
+        // Delete this and following instances
+        allInstancesSnapshot.forEach(doc => {
+          const docInstanceIndex = doc.data().instanceIndex || 0;
+          if (docInstanceIndex >= instanceIndex) {
+            batch.delete(doc.ref);
+          }
+        });
+
+        await batch.commit();
+      } else if (scope === 'ALL') {
+        // Delete all instances in the series
+        const batch = writeBatch(db);
+
+        // Get all events in the recurring series
+        const allInstancesQuery = query(
+          collection(db, 'events'),
+          where('recurringEventGroupId', '==', recurringGroupId)
+        );
+        const allInstancesSnapshot = await getDocs(allInstancesQuery);
+
+        // Delete all instances
+        allInstancesSnapshot.forEach(doc => {
+          batch.delete(doc.ref);
+        });
+
+        await batch.commit();
+      }
+
       alert('Event deleted successfully!');
       loadEvents();
+      setShowDeleteScopeDialog(false);
+      setDeleteEventData(null);
     } catch (err) {
       console.error('Error deleting event:', err);
       alert('Failed to delete event. Please try again.');
@@ -581,6 +650,21 @@ function ParentDashboard() {
                   }}>
                     {event.category}
                   </div>
+                  {event.isRecurring && (
+                    <div style={{
+                      background: '#667eea',
+                      color: 'white',
+                      padding: '4px 12px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }} title={`This is a recurring event (${event.recurrenceType})`}>
+                      🔄 Recurring
+                    </div>
+                  )}
                   <button
                     onClick={() => openEditEvent(event.id)}
                     style={{
@@ -667,6 +751,154 @@ function ParentDashboard() {
           }}
           onEventUpdated={loadEvents}
         />
+      )}
+
+      {/* Delete Scope Dialog for Recurring Events */}
+      {showDeleteScopeDialog && deleteEventData && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1001,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+          }}>
+            <h2 style={{ margin: '0 0 8px 0', color: '#333' }}>Delete Recurring Event</h2>
+            <p style={{ color: '#666', marginBottom: '24px', lineHeight: 1.5 }}>
+              Which events do you want to delete?
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '12px',
+                border: deleteScope === 'THIS_ONLY' ? '2px solid #ff4444' : '1px solid #ddd',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                background: deleteScope === 'THIS_ONLY' ? '#ff444415' : 'white',
+                transition: 'all 0.2s'
+              }}>
+                <input
+                  type="radio"
+                  name="deleteScope"
+                  value="THIS_ONLY"
+                  checked={deleteScope === 'THIS_ONLY'}
+                  onChange={(e) => setDeleteScope(e.target.value)}
+                  style={{ marginRight: '12px', cursor: 'pointer', width: '18px', height: '18px' }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 'bold', color: '#333', marginBottom: '2px' }}>Only this event</div>
+                  <div style={{ fontSize: '13px', color: '#888' }}>Delete just this single occurrence</div>
+                </div>
+              </label>
+
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '12px',
+                border: deleteScope === 'THIS_AND_FOLLOWING' ? '2px solid #ff4444' : '1px solid #ddd',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                background: deleteScope === 'THIS_AND_FOLLOWING' ? '#ff444415' : 'white',
+                transition: 'all 0.2s'
+              }}>
+                <input
+                  type="radio"
+                  name="deleteScope"
+                  value="THIS_AND_FOLLOWING"
+                  checked={deleteScope === 'THIS_AND_FOLLOWING'}
+                  onChange={(e) => setDeleteScope(e.target.value)}
+                  style={{ marginRight: '12px', cursor: 'pointer', width: '18px', height: '18px' }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 'bold', color: '#333', marginBottom: '2px' }}>This and following events</div>
+                  <div style={{ fontSize: '13px', color: '#888' }}>Delete this event and all future occurrences</div>
+                </div>
+              </label>
+
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '12px',
+                border: deleteScope === 'ALL' ? '2px solid #ff4444' : '1px solid #ddd',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                background: deleteScope === 'ALL' ? '#ff444415' : 'white',
+                transition: 'all 0.2s'
+              }}>
+                <input
+                  type="radio"
+                  name="deleteScope"
+                  value="ALL"
+                  checked={deleteScope === 'ALL'}
+                  onChange={(e) => setDeleteScope(e.target.value)}
+                  style={{ marginRight: '12px', cursor: 'pointer', width: '18px', height: '18px' }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 'bold', color: '#333', marginBottom: '2px' }}>All events in series</div>
+                  <div style={{ fontSize: '13px', color: '#888' }}>Delete every occurrence of this recurring event</div>
+                </div>
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => performDelete(
+                  deleteEventData.id,
+                  deleteScope,
+                  deleteEventData.recurringEventGroupId,
+                  deleteEventData.instanceIndex || 0
+                )}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  background: '#ff4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '15px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => {
+                  setShowDeleteScopeDialog(false);
+                  setDeleteEventData(null);
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  background: 'white',
+                  color: '#333',
+                  border: '2px solid #ddd',
+                  borderRadius: '8px',
+                  fontSize: '15px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
-import { collection, updateDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, updateDoc, doc, getDoc, query, where, getDocs, writeBatch } from 'firebase/firestore';
 
 function EditEvent({ eventId, onClose, onEventUpdated }) {
   const [title, setTitle] = useState('');
@@ -11,6 +11,10 @@ function EditEvent({ eventId, onClose, onEventUpdated }) {
   const [category, setCategory] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringEventGroupId, setRecurringEventGroupId] = useState(null);
+  const [showEditScopeDialog, setShowEditScopeDialog] = useState(false);
+  const [editScope, setEditScope] = useState('THIS_ONLY');
 
   const categories = [
     { name: 'School', color: '#667eea', icon: '📚' },
@@ -34,6 +38,8 @@ function EditEvent({ eventId, onClose, onEventUpdated }) {
           setLocation(data.location || '');
           setNotes(data.notes || '');
           setCategory(data.category || '');
+          setIsRecurring(data.isRecurring || false);
+          setRecurringEventGroupId(data.recurringEventGroupId || null);
         }
       } catch (err) {
         setError('Failed to load event: ' + err.message);
@@ -48,14 +54,24 @@ function EditEvent({ eventId, onClose, onEventUpdated }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
     if (!category) {
       setError('Please select a category');
-      setLoading(false);
       return;
     }
 
+    // If recurring, show scope dialog instead of updating immediately
+    if (isRecurring) {
+      setShowEditScopeDialog(true);
+      return;
+    }
+
+    // Non-recurring event: update immediately
+    await performUpdate('THIS_ONLY');
+  };
+
+  const performUpdate = async (scope) => {
+    setLoading(true);
     try {
       const selectedCategory = categories.find(c => c.name === category);
 
@@ -71,12 +87,58 @@ function EditEvent({ eventId, onClose, onEventUpdated }) {
         updatedAt: new Date()
       };
 
-      await updateDoc(doc(db, 'events', eventId), updatedData);
+      if (scope === 'THIS_ONLY') {
+        // Update just this event
+        await updateDoc(doc(db, 'events', eventId), updatedData);
+      } else if (scope === 'THIS_AND_FOLLOWING') {
+        // Update this event and all following instances
+        const batch = writeBatch(db);
+
+        // Get the current event to find its instance index
+        const currentEventDoc = await getDoc(doc(db, 'events', eventId));
+        const currentInstanceIndex = currentEventDoc.data().instanceIndex || 0;
+
+        // Get all events in the recurring series
+        const allInstancesQuery = query(
+          collection(db, 'events'),
+          where('recurringEventGroupId', '==', recurringEventGroupId)
+        );
+        const allInstancesSnapshot = await getDocs(allInstancesQuery);
+
+        // Update this and following instances
+        allInstancesSnapshot.forEach(doc => {
+          const instanceIndex = doc.data().instanceIndex || 0;
+          if (instanceIndex >= currentInstanceIndex) {
+            batch.update(doc.ref, updatedData);
+          }
+        });
+
+        await batch.commit();
+      } else if (scope === 'ALL') {
+        // Update all instances in the series
+        const batch = writeBatch(db);
+
+        // Get all events in the recurring series
+        const allInstancesQuery = query(
+          collection(db, 'events'),
+          where('recurringEventGroupId', '==', recurringEventGroupId)
+        );
+        const allInstancesSnapshot = await getDocs(allInstancesQuery);
+
+        // Update all instances
+        allInstancesSnapshot.forEach(doc => {
+          batch.update(doc.ref, updatedData);
+        });
+
+        await batch.commit();
+      }
 
       if (onEventUpdated) onEventUpdated();
       if (onClose) onClose();
 
-      alert('Event updated successfully!');
+      const scopeText = scope === 'THIS_ONLY' ? 'Event' : scope === 'THIS_AND_FOLLOWING' ? 'Events' : 'All events';
+      alert(`${scopeText} updated successfully!`);
+      setShowEditScopeDialog(false);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -107,6 +169,150 @@ function EditEvent({ eventId, onClose, onEventUpdated }) {
           textAlign: 'center'
         }}>
           <p style={{ color: '#666' }}>Loading event...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Edit scope dialog for recurring events
+  if (showEditScopeDialog) {
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1001,
+        padding: '20px'
+      }}>
+        <div style={{
+          background: 'white',
+          borderRadius: '16px',
+          padding: '32px',
+          maxWidth: '500px',
+          width: '100%',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+        }}>
+          <h2 style={{ margin: '0 0 16px 0', color: '#333' }}>Edit Recurring Event</h2>
+          <p style={{ color: '#666', marginBottom: '24px', lineHeight: 1.5 }}>
+            Which events do you want to update?
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '12px',
+              border: editScope === 'THIS_ONLY' ? '2px solid #667eea' : '1px solid #ddd',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              background: editScope === 'THIS_ONLY' ? '#667eea15' : 'white',
+              transition: 'all 0.2s'
+            }}>
+              <input
+                type="radio"
+                name="editScope"
+                value="THIS_ONLY"
+                checked={editScope === 'THIS_ONLY'}
+                onChange={(e) => setEditScope(e.target.value)}
+                style={{ marginRight: '12px', cursor: 'pointer', width: '18px', height: '18px' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 'bold', color: '#333', marginBottom: '2px' }}>Only this event</div>
+                <div style={{ fontSize: '13px', color: '#888' }}>Change just this single occurrence</div>
+              </div>
+            </label>
+
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '12px',
+              border: editScope === 'THIS_AND_FOLLOWING' ? '2px solid #667eea' : '1px solid #ddd',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              background: editScope === 'THIS_AND_FOLLOWING' ? '#667eea15' : 'white',
+              transition: 'all 0.2s'
+            }}>
+              <input
+                type="radio"
+                name="editScope"
+                value="THIS_AND_FOLLOWING"
+                checked={editScope === 'THIS_AND_FOLLOWING'}
+                onChange={(e) => setEditScope(e.target.value)}
+                style={{ marginRight: '12px', cursor: 'pointer', width: '18px', height: '18px' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 'bold', color: '#333', marginBottom: '2px' }}>This and following events</div>
+                <div style={{ fontSize: '13px', color: '#888' }}>Update this event and all future occurrences</div>
+              </div>
+            </label>
+
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '12px',
+              border: editScope === 'ALL' ? '2px solid #667eea' : '1px solid #ddd',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              background: editScope === 'ALL' ? '#667eea15' : 'white',
+              transition: 'all 0.2s'
+            }}>
+              <input
+                type="radio"
+                name="editScope"
+                value="ALL"
+                checked={editScope === 'ALL'}
+                onChange={(e) => setEditScope(e.target.value)}
+                style={{ marginRight: '12px', cursor: 'pointer', width: '18px', height: '18px' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 'bold', color: '#333', marginBottom: '2px' }}>All events in series</div>
+                <div style={{ fontSize: '13px', color: '#888' }}>Update every occurrence of this recurring event</div>
+              </div>
+            </label>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={() => performUpdate(editScope)}
+              disabled={loading}
+              style={{
+                flex: 1,
+                padding: '12px',
+                background: loading ? '#ccc' : '#667eea',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '15px',
+                fontWeight: 'bold',
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {loading ? 'Updating...' : 'Update'}
+            </button>
+            <button
+              onClick={() => setShowEditScopeDialog(false)}
+              disabled={loading}
+              style={{
+                flex: 1,
+                padding: '12px',
+                background: 'white',
+                color: '#667eea',
+                border: '2px solid #667eea',
+                borderRadius: '8px',
+                fontSize: '15px',
+                fontWeight: 'bold',
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     );
