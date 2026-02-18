@@ -10,6 +10,7 @@ import CustodyCalendar from '../components/CustodyCalendar';
 import ParentLinking from '../components/ParentLinking';
 import EditEvent from '../components/EditEvent';
 import NotificationCenter from '../components/NotificationCenter';
+import CalendarExport from '../components/CalendarExport';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -214,6 +215,8 @@ function ParentDashboard() {
           >
             <span style={{ fontSize: '20px' }}>+</span> Add New Event
           </button>
+
+          <CalendarExport events={events} custodySchedule={custodySchedule} />
 
           <button
             onClick={() => setShowCustodySetup(true)}
