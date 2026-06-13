@@ -138,7 +138,7 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
       if (linkedParentId) {
         const user = auth.currentUser;
         const userDoc = await getDoc(doc(db, 'users', user.uid));
-        const userName = userDoc.exists() && userDoc.data().name || 'Your co-parent';
+        const userName = (userDoc.exists() && userDoc.data().name) || 'Your co-parent';
         await createNotification(
           linkedParentId,
           'Event Updated',

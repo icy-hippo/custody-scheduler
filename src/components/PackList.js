@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 function PackList({ events, custodySchedule }) {
   const [checkedItems, setCheckedItems] = useState({});

@@ -103,6 +103,7 @@ function ChildDashboard() {
       loadCustodySchedule();
       loadFamily();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleLogout = async () => {

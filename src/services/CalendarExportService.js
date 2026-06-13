@@ -68,7 +68,6 @@ DESCRIPTION:Custody and Family Schedule
 
     // For all-day events or events without time
     const dateTypeValue = event.time ? eventStart : formatDateForIcal(event.date);
-    const dateTypeName = event.time ? 'DTSTART' : 'DTSTART;VALUE=DATE';
 
     ical += `BEGIN:VEVENT
 UID:${generateUID()}
@@ -156,7 +155,6 @@ DESCRIPTION:Custody Schedule
       // Parent changed, create event for the previous period
       if (lastParent && eventStartDate) {
         const eventDateStr = formatDateForIcal(eventStartDate.toISOString().split('T')[0]);
-        const daysUntilNow = Math.floor((currentDate - eventStartDate) / (1000 * 60 * 60 * 24));
 
         ical += `BEGIN:VEVENT
 UID:${generateUID()}

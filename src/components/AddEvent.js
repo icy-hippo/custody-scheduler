@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { db, auth } from '../firebase';
-import { collection, addDoc, doc, getDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDoc, writeBatch } from 'firebase/firestore';
 import { createNotification } from '../services/NotificationService';
 
 function AddEvent({ onClose, onEventAdded, linkedParentId }) {
@@ -32,7 +32,7 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
   const generateUUID = () => {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      const v = c === 'x' ? r : ((r & 0x3) | 0x8);
       return v.toString(16);
     });
   };
@@ -143,7 +143,7 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
       // Get user's familyId and name
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       const familyId = userDoc.exists() && userDoc.data().familyId;
-      const userName = userDoc.exists() && userDoc.data().name || 'Your co-parent';
+      const userName = (userDoc.exists() && userDoc.data().name) || 'Your co-parent';
 
       const baseEventData = {
         title,
