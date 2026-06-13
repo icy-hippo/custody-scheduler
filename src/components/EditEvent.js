@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
 import { collection, updateDoc, doc, getDoc, query, where, getDocs, writeBatch } from 'firebase/firestore';
+import { createNotification } from '../services/NotificationService';
 
-function EditEvent({ eventId, onClose, onEventUpdated }) {
+function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
@@ -131,6 +132,20 @@ function EditEvent({ eventId, onClose, onEventUpdated }) {
         });
 
         await batch.commit();
+      }
+
+      // Notify co-parent about the update
+      if (linkedParentId) {
+        const user = auth.currentUser;
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const userName = (userDoc.exists() && userDoc.data().name) || 'Your co-parent';
+        await createNotification(
+          linkedParentId,
+          'Event Updated',
+          `${userName} updated "${title}" on ${new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+          'event_updated',
+          { eventTitle: title, eventDate: date, updatedBy: user.uid }
+        );
       }
 
       if (onEventUpdated) onEventUpdated();

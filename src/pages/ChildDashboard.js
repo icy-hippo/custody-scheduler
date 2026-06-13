@@ -6,6 +6,8 @@ import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebas
 import WhereAmI from '../components/WhereAmI';
 import PackList from '../components/PackList';
 import FamilySetup from '../components/FamilySetup';
+import NotificationCenter from '../components/NotificationCenter';
+import VisualSchedule from '../components/VisualSchedule';
 
 function ChildDashboard() {
   const navigate = useNavigate();
@@ -101,6 +103,7 @@ function ChildDashboard() {
       loadCustodySchedule();
       loadFamily();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleLogout = async () => {
@@ -188,8 +191,9 @@ function ChildDashboard() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {user && <NotificationCenter userId={user.uid} />}
             {!familyId && (
-              <button 
+              <button
                 onClick={() => setShowFamilySetup(true)}
                 style={{
                   padding: '8px 16px',
@@ -205,7 +209,7 @@ function ChildDashboard() {
                 Join Family
               </button>
             )}
-            <button 
+            <button
               onClick={handleLogout}
               style={{
                 padding: '10px 20px',
@@ -225,6 +229,9 @@ function ChildDashboard() {
 
         {/* Where Am I Today */}
         <WhereAmI custodySchedule={custodySchedule} />
+
+        {/* 7-Day Visual Schedule */}
+        <VisualSchedule custodySchedule={custodySchedule} events={events} />
 
         {/* Pack List */}
         <PackList events={events} custodySchedule={custodySchedule} />

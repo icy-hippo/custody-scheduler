@@ -3,7 +3,6 @@ import { generateEventsIcal, generateCustodyIcal, downloadIcalFile, copyIcalToCl
 
 function CalendarExport({ events, custodySchedule }) {
   const [showModal, setShowModal] = useState(false);
-  const [exportType, setExportType] = useState('events');
   const [copied, setCopied] = useState(false);
 
   const handleExport = (type) => {

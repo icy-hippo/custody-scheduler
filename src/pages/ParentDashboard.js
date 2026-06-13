@@ -11,6 +11,7 @@ import ParentLinking from '../components/ParentLinking';
 import EditEvent from '../components/EditEvent';
 import NotificationCenter from '../components/NotificationCenter';
 import CalendarExport from '../components/CalendarExport';
+import { createNotification } from '../services/NotificationService';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -136,7 +137,7 @@ function ParentDashboard() {
         if (!window.confirm('Are you sure you want to delete this event?')) {
           return;
         }
-        await performDelete(eventId, 'THIS_ONLY', null, null);
+        await performDelete(eventId, 'THIS_ONLY', null, null, eventData);
       }
     } catch (err) {
       console.error('Error preparing event deletion:', err);
@@ -144,7 +145,7 @@ function ParentDashboard() {
     }
   };
 
-  const performDelete = async (eventId, scope, recurringGroupId, instanceIndex) => {
+  const performDelete = async (eventId, scope, recurringGroupId, instanceIndex, eventDataOverride) => {
     try {
       if (scope === 'THIS_ONLY') {
         // Delete just this event
@@ -188,6 +189,20 @@ function ParentDashboard() {
         await batch.commit();
       }
 
+      // Notify co-parent about the deletion
+      const deletedEventTitle = (eventDataOverride || deleteEventData)?.title;
+      if (linkedParentId && deletedEventTitle && user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const userName = (userDoc.exists() && userDoc.data().name) || 'Your co-parent';
+        await createNotification(
+          linkedParentId,
+          'Event Removed',
+          `${userName} removed "${deletedEventTitle}"`,
+          'event_deleted',
+          { eventTitle: deletedEventTitle, deletedBy: user.uid }
+        );
+      }
+
       alert('Event deleted successfully!');
       loadEvents();
       setShowDeleteScopeDialog(false);
@@ -210,6 +225,7 @@ function ParentDashboard() {
       loadCustodySchedule();
       loadFamily();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const formatDate = (dateString) => {
@@ -704,9 +720,10 @@ function ParentDashboard() {
 
       {/* Add Event Modal */}
       {showAddEvent && (
-        <AddEvent 
+        <AddEvent
           onClose={() => setShowAddEvent(false)}
           onEventAdded={loadEvents}
+          linkedParentId={linkedParentId}
         />
       )}
 
@@ -750,6 +767,7 @@ function ParentDashboard() {
             setEditingEventId(null);
           }}
           onEventUpdated={loadEvents}
+          linkedParentId={linkedParentId}
         />
       )}
 

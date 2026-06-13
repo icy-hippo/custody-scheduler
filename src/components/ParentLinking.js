@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { doc, setDoc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 
 function ParentLinking({ onClose, onParentLinked, familyId }) {
