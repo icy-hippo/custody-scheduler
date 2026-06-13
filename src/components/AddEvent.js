@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { db, auth } from '../firebase';
 import { collection, addDoc, doc, getDoc, writeBatch } from 'firebase/firestore';
+import { createNotification } from '../services/NotificationService';
 
-function AddEvent({ onClose, onEventAdded }) {
+function AddEvent({ onClose, onEventAdded, linkedParentId }) {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
@@ -139,9 +140,10 @@ function AddEvent({ onClose, onEventAdded }) {
       const user = auth.currentUser;
       const selectedCategory = categories.find(c => c.name === category);
 
-      // Get user's familyId
+      // Get user's familyId and name
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       const familyId = userDoc.exists() && userDoc.data().familyId;
+      const userName = userDoc.exists() && userDoc.data().name || 'Your co-parent';
 
       const baseEventData = {
         title,
@@ -180,6 +182,21 @@ function AddEvent({ onClose, onEventAdded }) {
       setRecurrenceType('WEEKLY');
       setDaysOfWeek([1]);
       setRecurrenceEndDate('');
+
+      // Notify co-parent about the new event
+      if (linkedParentId) {
+        const count = eventsToAdd.length;
+        const notifMsg = count === 1
+          ? `${userName} added "${title}" on ${new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+          : `${userName} added "${title}" as a recurring event (${count} instances)`;
+        await createNotification(
+          linkedParentId,
+          'New Event Added',
+          notifMsg,
+          'event_created',
+          { eventTitle: title, eventDate: date, createdBy: user.uid }
+        );
+      }
 
       if (onEventAdded) onEventAdded();
       if (onClose) onClose();
