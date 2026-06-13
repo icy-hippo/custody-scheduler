@@ -12,6 +12,7 @@ import EditEvent from '../components/EditEvent';
 import NotificationCenter from '../components/NotificationCenter';
 import CalendarExport from '../components/CalendarExport';
 import { createNotification } from '../services/NotificationService';
+import ExpenseTracker from '../components/ExpenseTracker';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ function ParentDashboard() {
   const [custodySchedule, setCustodySchedule] = useState(null);
   const [familyId, setFamilyId] = useState(null);
   const [linkedParentId, setLinkedParentId] = useState(null);
+  const [currentUserName, setCurrentUserName] = useState('');
 
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -113,6 +115,9 @@ function ParentDashboard() {
         }
         if (userData.linkedParentId) {
           setLinkedParentId(userData.linkedParentId);
+        }
+        if (userData.name) {
+          setCurrentUserName(userData.name);
         }
       }
     } catch (err) {
@@ -419,6 +424,15 @@ function ParentDashboard() {
           <div style={{ marginBottom: '24px' }}>
             <CustodyCalendar custodySchedule={custodySchedule} />
           </div>
+        )}
+
+        {/* Shared Expense Tracker */}
+        {familyId && (
+          <ExpenseTracker
+            familyId={familyId}
+            linkedParentId={linkedParentId}
+            currentUserName={currentUserName}
+          />
         )}
 
         {/* Search and Filter Bar */}

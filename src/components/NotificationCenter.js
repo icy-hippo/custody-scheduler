@@ -32,6 +32,8 @@ function NotificationCenter({ userId }) {
         return '🏠';
       case 'parent_linked':
         return '👥';
+      case 'expense_added':
+        return '💰';
       default:
         return '📢';
     }
@@ -49,6 +51,8 @@ function NotificationCenter({ userId }) {
         return '#ffa500';
       case 'parent_linked':
         return '#34a853';
+      case 'expense_added':
+        return '#ffa500';
       default:
         return '#667eea';
     }
