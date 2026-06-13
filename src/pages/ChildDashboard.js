@@ -73,11 +73,31 @@ function ChildDashboard() {
 
   const loadCustodySchedule = async () => {
     if (!user) return;
-    
+
     try {
-      const custodyDoc = await getDoc(doc(db, 'custody', user.uid));
+      // Try child's own doc first
+      let custodyDoc = await getDoc(doc(db, 'custody', user.uid));
       if (custodyDoc.exists()) {
         setCustodySchedule(custodyDoc.data());
+        return;
+      }
+
+      // Fall back to a parent in the same family
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const fid = userDoc.exists() && userDoc.data().familyId;
+      if (!fid) return;
+
+      const familyDoc = await getDoc(doc(db, 'families', fid));
+      if (!familyDoc.exists()) return;
+
+      const members = familyDoc.data().members || [];
+      for (const memberId of members) {
+        if (memberId === user.uid) continue;
+        const memberCustody = await getDoc(doc(db, 'custody', memberId));
+        if (memberCustody.exists()) {
+          setCustodySchedule(memberCustody.data());
+          return;
+        }
       }
     } catch (err) {
       console.error('Error loading custody schedule:', err);

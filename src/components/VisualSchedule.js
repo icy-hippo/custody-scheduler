@@ -1,9 +1,8 @@
 function VisualSchedule({ custodySchedule, events }) {
-  if (!custodySchedule) return null;
-
-  const { pattern, startDate, parent1Name, parent2Name } = custodySchedule;
+  const { pattern, startDate, parent1Name, parent2Name } = custodySchedule || {};
 
   const getParentForDate = (date) => {
+    if (!custodySchedule) return null;
     const start = new Date(startDate);
     const daysDiff = Math.floor((date - start) / (1000 * 60 * 60 * 24));
 
@@ -46,9 +45,9 @@ function VisualSchedule({ custodySchedule, events }) {
     const isToday = i === 0;
 
     const isParent1 = parent === parent1Name;
-    const parentColor = isParent1 ? '#667eea' : '#f093fb';
-    const parentBg = isParent1 ? 'rgba(102, 126, 234, 0.12)' : 'rgba(240, 147, 251, 0.12)';
-    const houseIcon = isParent1 ? '🏠' : '🏡';
+    const parentColor = parent ? (isParent1 ? '#667eea' : '#f093fb') : '#667eea';
+    const parentBg = parent ? (isParent1 ? 'rgba(102, 126, 234, 0.12)' : 'rgba(240, 147, 251, 0.12)') : 'rgba(102, 126, 234, 0.08)';
+    const houseIcon = parent ? (isParent1 ? '🏠' : '🏡') : null;
 
     days.push({ label, dayNum, parent, houseIcon, parentColor, parentBg, dayEvents, isToday });
   }
@@ -103,17 +102,21 @@ function VisualSchedule({ custodySchedule, events }) {
             </div>
 
             {/* House icon showing which parent */}
-            <div style={{ fontSize: '28px', marginBottom: '6px' }}>
-              {day.houseIcon}
-            </div>
-            <div style={{
-              fontSize: '11px',
-              fontWeight: 'bold',
-              marginBottom: '8px',
-              color: day.isToday ? 'white' : day.parentColor
-            }}>
-              {day.parent}
-            </div>
+            {day.houseIcon && (
+              <div style={{ fontSize: '28px', marginBottom: '6px' }}>
+                {day.houseIcon}
+              </div>
+            )}
+            {day.parent && (
+              <div style={{
+                fontSize: '11px',
+                fontWeight: 'bold',
+                marginBottom: '8px',
+                color: day.isToday ? 'white' : day.parentColor
+              }}>
+                {day.parent}
+              </div>
+            )}
 
             {/* Event icons for this day */}
             {day.dayEvents.length > 0 && (
@@ -152,7 +155,7 @@ function VisualSchedule({ custodySchedule, events }) {
       </div>
 
       {/* Legend */}
-      <div style={{
+      {custodySchedule && <div style={{
         display: 'flex',
         gap: '24px',
         marginTop: '16px',
@@ -173,7 +176,7 @@ function VisualSchedule({ custodySchedule, events }) {
           }} />
           🏡 {parent2Name}
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
