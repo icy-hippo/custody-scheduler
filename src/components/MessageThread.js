@@ -10,15 +10,23 @@ function MessageThread({ familyId, currentUserName, linkedParentId }) {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [open, setOpen] = useState(false);
+  const [sendError, setSendError] = useState('');
   const bottomRef = useRef(null);
   const user = auth.currentUser;
 
+  // Use familyId if available, otherwise derive a stable room ID from both UIDs
+  const roomId = familyId || (
+    user && linkedParentId
+      ? [user.uid, linkedParentId].sort().join('_')
+      : null
+  );
+
   useEffect(() => {
-    if (!familyId) return;
+    if (!roomId) return;
 
     const q = query(
       collection(db, 'messages'),
-      where('familyId', '==', familyId),
+      where('familyId', '==', roomId),
       orderBy('createdAt', 'asc')
     );
 
@@ -27,7 +35,7 @@ function MessageThread({ familyId, currentUserName, linkedParentId }) {
     });
 
     return () => unsubscribe();
-  }, [familyId]);
+  }, [roomId]);
 
   // Scroll to bottom when new messages arrive and panel is open
   useEffect(() => {
@@ -42,12 +50,13 @@ function MessageThread({ familyId, currentUserName, linkedParentId }) {
 
   const send = async (e) => {
     e.preventDefault();
-    if (!text.trim() || !familyId) return;
+    if (!text.trim() || !roomId) return;
 
     setSending(true);
+    setSendError('');
     try {
       await addDoc(collection(db, 'messages'), {
-        familyId,
+        familyId: roomId,
         text: text.trim(),
         senderId: user.uid,
         senderName: currentUserName || 'A parent',
@@ -55,6 +64,9 @@ function MessageThread({ familyId, currentUserName, linkedParentId }) {
         readBy: [user.uid],
       });
       setText('');
+    } catch (err) {
+      setSendError('Failed to send. Check your connection and try again.');
+      console.error('Send error:', err);
     } finally {
       setSending(false);
     }
@@ -221,6 +233,12 @@ function MessageThread({ familyId, currentUserName, linkedParentId }) {
           </div>
 
           {/* Input */}
+          {sendError && (
+            <div style={{ padding: '8px 16px', color: '#c33', fontSize: '13px', background: '#fee' }}>
+              {sendError}
+            </div>
+          )}
+
           <form
             onSubmit={send}
             style={{
