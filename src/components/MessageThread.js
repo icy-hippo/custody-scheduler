@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { db, auth } from '../firebase';
 import {
-  collection, addDoc, query, where, orderBy,
+  collection, addDoc, query, where,
   onSnapshot, serverTimestamp
 } from 'firebase/firestore';
 
@@ -26,12 +26,17 @@ function MessageThread({ familyId, currentUserName, linkedParentId }) {
 
     const q = query(
       collection(db, 'messages'),
-      where('familyId', '==', roomId),
-      orderBy('createdAt', 'asc')
+      where('familyId', '==', roomId)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setMessages(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+      const msgs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      msgs.sort((a, b) => {
+        const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return aTime - bTime;
+      });
+      setMessages(msgs);
     });
 
     return () => unsubscribe();
