@@ -29,11 +29,11 @@ function ParentLinking({ onClose, onParentLinked, familyId }) {
       // Create invite document
       await setDoc(doc(db, 'parentInvites', code), {
         invitedBy: user.uid,
-        invitedEmail: coParentEmail,
+        invitedEmail: coParentEmail.toLowerCase().trim(),
         familyId: familyId || user.uid,
         createdAt: new Date(),
         status: 'pending',
-        inviterName: user.email
+        inviterName: user.displayName || user.email
       });
 
       setGeneratedCode(code);
@@ -65,8 +65,9 @@ function ParentLinking({ onClose, onParentLinked, familyId }) {
 
       const inviteData = inviteDoc.data();
 
-      // Verify email matches
-      if (inviteData.invitedEmail !== user.email) {
+      // Verify email matches (case-insensitive)
+      if (inviteData.invitedEmail &&
+          inviteData.invitedEmail.toLowerCase() !== user.email.toLowerCase()) {
         setError(
           `This invite was sent to ${inviteData.invitedEmail}, but you're logged in as ${user.email}. Please log in with the correct account.`
         );
