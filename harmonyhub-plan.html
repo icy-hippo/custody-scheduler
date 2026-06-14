@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #222; background: white; padding: 48px; max-width: 900px; margin: 0 auto; font-size: 13px; line-height: 1.6; }
+  h1 { font-size: 28px; color: #667eea; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 17px; color: #333; margin: 28px 0 12px 0; padding-bottom: 6px; border-bottom: 2px solid #667eea; }
+  h3 { font-size: 14px; color: #667eea; margin: 18px 0 8px 0; }
+  .week { background: #f8f9fa; border-left: 4px solid #667eea; border-radius: 0 8px 8px 0; padding: 16px 20px; margin-bottom: 16px; page-break-inside: avoid; }
+  .week h3 { margin-top: 0; font-size: 15px; color: #333; }
+  .week .goal { font-style: italic; color: #667eea; margin-bottom: 10px; font-size: 12px; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 4px; }
+  li::marker { color: #667eea; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th { background: #667eea; color: white; padding: 10px 12px; text-align: left; font-size: 12px; }
+  td { padding: 9px 12px; border-bottom: 1px solid #eee; font-size: 12px; }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+  .high { background: #fde8e8; color: #c0392b; }
+  .medium { background: #fef3cd; color: #856404; }
+  .low { background: #d4edda; color: #155724; }
+  .status-box { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+  .stat { background: #f0f4ff; border: 1px solid #667eea33; border-radius: 10px; padding: 14px 20px; flex: 1; min-width: 140px; text-align: center; }
+  .stat .number { font-size: 28px; font-weight: bold; color: #667eea; }
+  .stat .label { font-size: 11px; color: #888; margin-top: 2px; }
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .feature { background: #f8f9fa; border-radius: 6px; padding: 10px 14px; font-size: 12px; }
+  .feature .done { color: #34a853; font-weight: bold; }
+  .feature .todo { color: #ff6b9d; font-weight: bold; }
+  .today { background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px 16px; margin-bottom: 24px; font-size: 13px; }
+  .today strong { color: #856404; }
+  @media print {
+    body { padding: 24px; }
+    .week { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>HarmonyHub — Mobile Launch Plan</h1>
+<p class="subtitle">Project Plan · Generated June 14, 2026 · Target: Android Play Store by July 31, 2026</p>
+
+<div class="today">
+  <strong>Today's Date:</strong> June 14, 2026 &nbsp;|&nbsp; <strong>Days Until Deadline:</strong> 47 days &nbsp;|&nbsp; <strong>Status:</strong> On Track
+</div>
+
+<div class="status-box">
+  <div class="stat"><div class="number">7</div><div class="label">Weeks Remaining</div></div>
+  <div class="stat"><div class="number">70%</div><div class="label">App Complete</div></div>
+  <div class="stat"><div class="number">$25</div><div class="label">Play Store Fee</div></div>
+  <div class="stat"><div class="number">14</div><div class="label">Days Review Buffer</div></div>
+</div>
+
+<h2>Current State — What's Built</h2>
+<div class="feature-grid">
+  <div class="feature"><span class="done">✅</span> Firebase Auth (login/signup)</div>
+  <div class="feature"><span class="done">✅</span> Custody schedule calendar</div>
+  <div class="feature"><span class="done">✅</span> Event management (recurring)</div>
+  <div class="feature"><span class="done">✅</span> Co-parent linking via invite code</div>
+  <div class="feature"><span class="done">✅</span> Real-time notifications (in-app)</div>
+  <div class="feature"><span class="done">✅</span> Child visual schedule (7-day strip)</div>
+  <div class="feature"><span class="done">✅</span> Shared expense tracker</div>
+  <div class="feature"><span class="done">✅</span> Real-time co-parent messaging</div>
+  <div class="feature"><span class="done">✅</span> Deployed on Vercel</div>
+  <div class="feature"><span class="done">✅</span> Capacitor installed (Android ready)</div>
+  <div class="feature"><span class="todo">⏳</span> Push notifications (native)</div>
+  <div class="feature"><span class="todo">⏳</span> Mobile UI polish</div>
+  <div class="feature"><span class="todo">⏳</span> Onboarding flow</div>
+  <div class="feature"><span class="todo">⏳</span> Play Store listing</div>
+</div>
+
+<h2>Week-by-Week Timeline</h2>
+
+<div class="week">
+  <h3>Week 1 — June 14–20 · Mobile Foundation</h3>
+  <p class="goal">Goal: App runs correctly on a real Android phone</p>
+  <ul>
+    <li>Configure Capacitor (app ID, name, icon, splash screen)</li>
+    <li>Build APK and install on a real Android device</li>
+    <li>Fix mobile responsiveness — buttons, font sizes, layout on small screens</li>
+    <li>Fix hover states that don't work on touch screens</li>
+    <li>Test every feature end-to-end on the phone</li>
+  </ul>
+</div>
+
+<div class="week">
+  <h3>Week 2 — June 21–27 · Push Notifications + Auth Polish</h3>
+  <p class="goal">Goal: App feels native, not like a website</p>
+  <ul>
+    <li>Integrate @capacitor/push-notifications (replace browser bell)</li>
+    <li>Add handoff reminders — notify 24hr before custody switchover</li>
+    <li>Implement "stay logged in" / persistent auth on mobile</li>
+    <li>Fix any Firebase auth quirks in Android WebView</li>
+    <li>Add loading states and skeleton screens</li>
+  </ul>
+</div>
+
+<div class="week">
+  <h3>Week 3 — June 28 – July 4 · Feature Completion</h3>
+  <p class="goal">Goal: App is feature-complete for v1.0 launch</p>
+  <ul>
+    <li>Child "what's changing" alert when parent edits upcoming event</li>
+    <li>Onboarding flow — new users understand the app in 60 seconds</li>
+    <li>Empty states — meaningful UI before any data exists</li>
+    <li>Basic error handling (lost connection, failed saves)</li>
+    <li>Communication log export (download message history as PDF/text)</li>
+  </ul>
+</div>
+
+<div class="week">
+  <h3>Week 4 — July 5–11 · Beta Testing</h3>
+  <p class="goal">Goal: Real people use it and report bugs</p>
+  <ul>
+    <li>Recruit 5–10 families (friends, family, PISD contacts, autism support groups)</li>
+    <li>Distribute APK via Google Drive or Firebase App Distribution</li>
+    <li>Create a simple feedback form (Google Form)</li>
+    <li>Add "Report a Bug" button inside the app</li>
+    <li>Fix top 5 issues reported by testers</li>
+    <li>Performance audit — load time on slower/older Android phones</li>
+  </ul>
+</div>
+
+<div class="week">
+  <h3>Week 5 — July 12–18 · Play Store Submission</h3>
+  <p class="goal">Goal: App submitted — this week has a hard deadline</p>
+  <ul>
+    <li>Write Privacy Policy (required — use privacypolicygenerator.info)</li>
+    <li>Write Terms of Service</li>
+    <li>Create Play Store listing: screenshots, description, content rating</li>
+    <li>Generate signed AAB (Android App Bundle) for Play Store</li>
+    <li>Create Google Play Developer account ($25 one-time fee)</li>
+    <li><strong>Submit to Play Store by July 14 at the latest</strong></li>
+  </ul>
+</div>
+
+<div class="week">
+  <h3>Week 6 — July 19–25 · Review Buffer</h3>
+  <p class="goal">Goal: Pass Play Store review (first reviews take 7–14 days)</p>
+  <ul>
+    <li>Respond to any rejection feedback from Play Store reviewers</li>
+    <li>Fix flagged issues and resubmit if needed</li>
+    <li>Continue beta user feedback loop</li>
+    <li>Prepare launch communications (who you'll notify on launch day)</li>
+  </ul>
+</div>
+
+<div class="week">
+  <h3>Week 7 — July 26–31 · Launch</h3>
+  <p class="goal">Goal: Live on Play Store with real users</p>
+  <ul>
+    <li>App approved and published on Play Store</li>
+    <li>Share with beta testers and initial user group</li>
+    <li>Monitor Firebase console for errors and crashes</li>
+    <li>Gather first-week user feedback</li>
+    <li>Document v2.0 roadmap (iOS, more features)</li>
+  </ul>
+</div>
+
+<h2>Risk Register</h2>
+<table>
+  <tr>
+    <th>Risk</th>
+    <th>Likelihood</th>
+    <th>Impact</th>
+    <th>Mitigation</th>
+  </tr>
+  <tr>
+    <td>Play Store review takes longer than 14 days</td>
+    <td><span class="badge medium">Medium</span></td>
+    <td>High</td>
+    <td>Submit by July 12, not July 18. Build buffer into the plan.</td>
+  </tr>
+  <tr>
+    <td>Mobile UI needs major rework</td>
+    <td><span class="badge medium">Medium</span></td>
+    <td>Medium</td>
+    <td>Test on real device in Week 1, not Week 3.</td>
+  </tr>
+  <tr>
+    <td>Onboarding too confusing for new users</td>
+    <td><span class="badge high">High</span></td>
+    <td>High</td>
+    <td>Beta test with someone who has never seen the app. Watch them use it without explaining anything.</td>
+  </tr>
+  <tr>
+    <td>Play Store rejects app for policy violation</td>
+    <td><span class="badge low">Low</span></td>
+    <td>High</td>
+    <td>Follow content policy carefully, include privacy policy, don't collect more data than needed.</td>
+  </tr>
+  <tr>
+    <td>Firebase costs at scale</td>
+    <td><span class="badge low">Low</span></td>
+    <td>Low</td>
+    <td>Free tier handles ~50k reads/day. Fine for launch. Set billing alerts.</td>
+  </tr>
+  <tr>
+    <td>Push notifications complex on Android</td>
+    <td><span class="badge medium">Medium</span></td>
+    <td>Medium</td>
+    <td>Capacitor handles most of it. FCM + VAPID key already partially configured.</td>
+  </tr>
+</table>
+
+<h2>Tech Stack Summary</h2>
+<table>
+  <tr><th>Layer</th><th>Technology</th><th>Status</th></tr>
+  <tr><td>Frontend</td><td>React 19</td><td>✅ Built</td></tr>
+  <tr><td>Mobile packaging</td><td>Capacitor + Android Studio</td><td>✅ Installed</td></tr>
+  <tr><td>Auth</td><td>Firebase Authentication</td><td>✅ Live</td></tr>
+  <tr><td>Database</td><td>Cloud Firestore</td><td>✅ Live</td></tr>
+  <tr><td>Web hosting</td><td>Vercel</td><td>✅ Live</td></tr>
+  <tr><td>Push notifications</td><td>Firebase Cloud Messaging + Capacitor</td><td>⏳ Week 2</td></tr>
+  <tr><td>App distribution</td><td>Google Play Store</td><td>⏳ Week 5</td></tr>
+</table>
+
+<h2>Key Contacts & Resources</h2>
+<ul>
+  <li><strong>Play Store Console:</strong> play.google.com/console</li>
+  <li><strong>Firebase Console:</strong> console.firebase.google.com</li>
+  <li><strong>Privacy Policy Generator:</strong> privacypolicygenerator.info</li>
+  <li><strong>Capacitor Docs:</strong> capacitorjs.com/docs</li>
+  <li><strong>GitHub Repo:</strong> github.com/icy-hippo/custody-scheduler</li>
+  <li><strong>Live App:</strong> Vercel deployment</li>
+</ul>
+
+<br>
+<p style="color:#aaa; font-size:11px; text-align:center; margin-top:32px;">HarmonyHub Project Plan · Confidential · Generated June 14, 2026</p>
+
+</body>
+</html>
