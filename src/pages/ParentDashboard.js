@@ -13,6 +13,7 @@ import NotificationCenter from '../components/NotificationCenter';
 import CalendarExport from '../components/CalendarExport';
 import { createNotification } from '../services/NotificationService';
 import ExpenseTracker from '../components/ExpenseTracker';
+import MessageThread from '../components/MessageThread';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -434,6 +435,13 @@ function ParentDashboard() {
             currentUserName={currentUserName}
           />
         )}
+
+        {/* Co-Parent Messaging */}
+        <MessageThread
+          familyId={familyId}
+          linkedParentId={linkedParentId}
+          currentUserName={currentUserName}
+        />
 
         {/* Search and Filter Bar */}
         {events.length > 0 && (
