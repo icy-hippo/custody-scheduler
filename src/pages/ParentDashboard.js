@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, orderBy, doc, getDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, doc, getDoc, deleteDoc, writeBatch, updateDoc } from 'firebase/firestore';
 import AddEvent from '../components/AddEvent';
 import CustodySetup from '../components/CustodySetup';
 import FamilySetup from '../components/FamilySetup';
@@ -106,19 +106,32 @@ function ParentDashboard() {
 
   const loadFamily = async () => {
     if (!user) return;
-    
+
     try {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        if (userData.familyId) {
-          setFamilyId(userData.familyId);
-        }
-        if (userData.linkedParentId) {
-          setLinkedParentId(userData.linkedParentId);
-        }
-        if (userData.name) {
-          setCurrentUserName(userData.name);
+        if (userData.familyId) setFamilyId(userData.familyId);
+        if (userData.linkedParentId) setLinkedParentId(userData.linkedParentId);
+        if (userData.name) setCurrentUserName(userData.name);
+
+        // If not yet linked, check if a sent invite was accepted
+        if (!userData.linkedParentId) {
+          const inviteQuery = query(
+            collection(db, 'parentInvites'),
+            where('invitedBy', '==', user.uid),
+            where('status', '==', 'accepted')
+          );
+          const inviteSnap = await getDocs(inviteQuery);
+          if (!inviteSnap.empty) {
+            const invite = inviteSnap.docs[0].data();
+            await updateDoc(doc(db, 'users', user.uid), {
+              linkedParentId: invite.acceptedBy,
+              familyId: invite.familyId
+            });
+            setLinkedParentId(invite.acceptedBy);
+            setFamilyId(invite.familyId);
+          }
         }
       }
     } catch (err) {

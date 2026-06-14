@@ -82,25 +82,20 @@ function ParentLinking({ onClose, onParentLinked, familyId }) {
       }
 
       // Link the parents together
-      const familyId = inviteData.familyId;
+      const linkedFamilyId = inviteData.familyId;
 
-      // Update current user
+      // Update current user's doc only — inviting parent picks up the link on next load
       await updateDoc(doc(db, 'users', user.uid), {
         linkedParentId: inviteData.invitedBy,
-        familyId: familyId
+        familyId: linkedFamilyId
       });
 
-      // Update inviting parent
-      await updateDoc(doc(db, 'users', inviteData.invitedBy), {
-        linkedParentId: user.uid,
-        familyId: familyId
-      });
-
-      // Mark invite as accepted
+      // Mark invite as accepted with acceptedBy so the inviting parent can self-update
       await updateDoc(doc(db, 'parentInvites', inviteCode), {
         status: 'accepted',
         acceptedAt: new Date(),
-        acceptedBy: user.uid
+        acceptedBy: user.uid,
+        acceptedByName: user.displayName || user.email
       });
 
       alert('Successfully linked with co-parent!');
