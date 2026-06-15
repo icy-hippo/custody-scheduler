@@ -65,9 +65,11 @@ function VisualSchedule({ custodySchedule, events }) {
       </h2>
 
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: '8px'
+        display: 'flex',
+        gap: '8px',
+        overflowX: 'auto',
+        paddingBottom: '4px',
+        WebkitOverflowScrolling: 'touch'
       }}>
         {days.map((day, idx) => (
           <div
@@ -79,8 +81,9 @@ function VisualSchedule({ custodySchedule, events }) {
               padding: '12px 8px',
               textAlign: 'center',
               color: day.isToday ? 'white' : '#333',
-              transition: 'transform 0.1s',
-              cursor: 'default'
+              cursor: 'default',
+              minWidth: '80px',
+              flexShrink: 0
             }}
           >
             <div style={{

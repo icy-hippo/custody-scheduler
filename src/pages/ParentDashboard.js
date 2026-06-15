@@ -665,87 +665,91 @@ function ParentDashboard() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {filteredEvents.map(event => (
-                <div 
+                <div
                   key={event.id}
                   style={{
-                    padding: '16px',
+                    padding: '12px',
                     border: `2px solid ${event.color}`,
                     borderLeft: `6px solid ${event.color}`,
                     borderRadius: '8px',
                     background: `${event.color}10`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '16px'
                   }}
                 >
-                  <div style={{ fontSize: '32px' }}>{event.icon}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 'bold', color: '#333', fontSize: '18px' }}>{event.title}</div>
-                    <div style={{ color: '#666', fontSize: '14px', marginTop: '4px' }}>
-                      {formatDate(event.date)} {event.time && `at ${event.time}`}
-                      {event.location && ` • ${event.location}`}
+                  {/* Top row: icon + info */}
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '10px' }}>
+                    <div style={{ fontSize: '28px', flexShrink: 0 }}>{event.icon}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 'bold', color: '#333', fontSize: '16px', wordBreak: 'break-word' }}>{event.title}</div>
+                      <div style={{ color: '#666', fontSize: '13px', marginTop: '2px' }}>
+                        {formatDate(event.date)} {event.time && `at ${event.time}`}
+                        {event.location && ` • ${event.location}`}
+                      </div>
+                      {event.notes && (
+                        <div style={{ color: '#888', fontSize: '12px', marginTop: '2px', wordBreak: 'break-word' }}>
+                          {event.notes}
+                        </div>
+                      )}
                     </div>
-                    {event.notes && (
-                      <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>
-                        {event.notes}
+                    <div style={{
+                      background: event.color,
+                      color: 'white',
+                      padding: '3px 8px',
+                      borderRadius: '12px',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      flexShrink: 0
+                    }}>
+                      {event.category}
+                    </div>
+                  </div>
+                  {/* Bottom row: buttons */}
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                    {event.isRecurring && (
+                      <div style={{
+                        background: '#667eea',
+                        color: 'white',
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        🔄 Recurring
                       </div>
                     )}
+                    <button
+                      onClick={() => openEditEvent(event.id)}
+                      style={{
+                        background: '#4facfe',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '6px 16px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        fontSize: '13px'
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteEvent(event.id)}
+                      style={{
+                        background: '#ff4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '6px 16px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        fontSize: '13px'
+                      }}
+                    >
+                      Delete
+                    </button>
                   </div>
-                  <div style={{
-                    background: event.color,
-                    color: 'white',
-                    padding: '4px 12px',
-                    borderRadius: '12px',
-                    fontSize: '12px',
-                    fontWeight: 'bold'
-                  }}>
-                    {event.category}
-                  </div>
-                  {event.isRecurring && (
-                    <div style={{
-                      background: '#667eea',
-                      color: 'white',
-                      padding: '4px 12px',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }} title={`This is a recurring event (${event.recurrenceType})`}>
-                      🔄 Recurring
-                    </div>
-                  )}
-                  <button
-                    onClick={() => openEditEvent(event.id)}
-                    style={{
-                      background: '#4facfe',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '8px 16px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      fontSize: '14px'
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => deleteEvent(event.id)}
-                    style={{
-                      background: '#ff4444',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '8px 16px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      fontSize: '14px'
-                    }}
-                  >
-                    Delete
-                  </button>
                 </div>
               ))}
             </div>

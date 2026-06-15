@@ -102,11 +102,11 @@ function CustodyCalendar({ custodySchedule }) {
     <div style={{
       background: 'white',
       borderRadius: '16px',
-      padding: '32px',
+      padding: '16px',
       boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
     }}>
       <div style={{ marginBottom: '32px' }}>
-        <h2 style={{ margin: '0 0 24px 0', color: '#333', fontSize: '28px' }}>
+        <h2 style={{ margin: '0 0 24px 0', color: '#333', fontSize: '22px' }}>
           📅 Custody Schedule
         </h2>
 
