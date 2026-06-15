@@ -56,11 +56,12 @@ function VisualSchedule({ custodySchedule, events }) {
     <div style={{
       background: 'white',
       borderRadius: '20px',
-      padding: '28px',
+      padding: '20px 0 16px 0',
       marginBottom: '24px',
-      boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+      boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+      overflow: 'hidden'
     }}>
-      <h2 style={{ marginTop: 0, color: '#333', fontSize: '24px' }}>
+      <h2 style={{ marginTop: 0, color: '#333', fontSize: '22px', padding: '0 20px 12px 20px' }}>
         🗓️ My Week Ahead
       </h2>
 
@@ -68,8 +69,12 @@ function VisualSchedule({ custodySchedule, events }) {
         display: 'flex',
         gap: '8px',
         overflowX: 'auto',
-        paddingBottom: '4px',
-        WebkitOverflowScrolling: 'touch'
+        paddingLeft: '20px',
+        paddingRight: '20px',
+        paddingBottom: '8px',
+        WebkitOverflowScrolling: 'touch',
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none'
       }}>
         {days.map((day, idx) => (
           <div
@@ -161,9 +166,10 @@ function VisualSchedule({ custodySchedule, events }) {
       {custodySchedule && <div style={{
         display: 'flex',
         gap: '24px',
-        marginTop: '16px',
+        marginTop: '12px',
         justifyContent: 'center',
-        flexWrap: 'wrap'
+        flexWrap: 'wrap',
+        padding: '0 20px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#666' }}>
           <span style={{
