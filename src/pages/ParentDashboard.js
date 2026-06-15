@@ -11,9 +11,10 @@ import ParentLinking from '../components/ParentLinking';
 import EditEvent from '../components/EditEvent';
 import NotificationCenter from '../components/NotificationCenter';
 import CalendarExport from '../components/CalendarExport';
-import { createNotification } from '../services/NotificationService';
+import BottomTabBar from '../components/BottomTabBar';
 import ExpenseTracker from '../components/ExpenseTracker';
 import MessageThread from '../components/MessageThread';
+import { createNotification } from '../services/NotificationService';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -30,12 +31,13 @@ function ParentDashboard() {
   const [familyId, setFamilyId] = useState(null);
   const [linkedParentId, setLinkedParentId] = useState(null);
   const [currentUserName, setCurrentUserName] = useState('');
+  const [activeTab, setActiveTab] = useState('events');
 
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
-  const [filterDateRange, setFilterDateRange] = useState({ start: '', end: '' });
-  const [sortBy, setSortBy] = useState('date');
+  const [filterDateRange] = useState({ start: '', end: '' });
+  const [sortBy] = useState('date');
 
   // Delete scope dialog state for recurring events
   const [showDeleteScopeDialog, setShowDeleteScopeDialog] = useState(false);
@@ -311,451 +313,266 @@ function ParentDashboard() {
     );
   }
 
+  const tabs = [
+    { id: 'events', icon: '📅', label: 'Events' },
+    { id: 'calendar', icon: '🏠', label: 'Calendar' },
+    { id: 'messages', icon: '💬', label: 'Messages' },
+    { id: 'expenses', icon: '💰', label: 'Expenses' },
+    { id: 'settings', icon: '⚙️', label: 'More' },
+  ];
+
+  const pageStyle = {
+    minHeight: '100vh',
+    background: '#f5f7fa',
+    fontFamily: 'system-ui',
+    paddingBottom: '72px'
+  };
+
+  const contentStyle = {
+    padding: '16px',
+    maxWidth: '700px',
+    margin: '0 auto'
+  };
+
+  const headerStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '16px',
+    background: 'white',
+    padding: '14px 16px',
+    borderRadius: '12px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+  };
+
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f7fa', padding: '40px', fontFamily: 'system-ui' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={pageStyle}>
+      <div style={contentStyle}>
+
         {/* Header */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginBottom: '32px',
-          background: 'white',
-          padding: '24px',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
+        <div style={headerStyle}>
           <div>
-  <h1 style={{ margin: 0, color: '#333' }}>Parent Dashboard</h1>
-  <p style={{ margin: '8px 0 0 0', color: '#666' }}>Manage your family's schedule</p>
-</div>
-<div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-  <NotificationCenter userId={user.uid} />
-  <button 
-    onClick={handleLogout}
-    style={{
-      padding: '10px 24px',
-      background: 'white',
-      color: '#667eea',
-      border: '2px solid #667eea',
-      borderRadius: '8px',
-      cursor: 'pointer',
-      fontWeight: 'bold'
-    }}
-  >
-    Logout
-  </button>
-</div>
-        </div>
-
-        {/* Action Buttons */}
-        <div style={{ marginBottom: '24px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <button
-            onClick={() => setShowAddEvent(true)}
-            style={{
-              padding: '16px 32px',
-              background: '#667eea',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-          >
-            <span style={{ fontSize: '20px' }}>+</span> Add New Event
-          </button>
-
-          <CalendarExport events={events} custodySchedule={custodySchedule} />
-
-          <button
-            onClick={() => setShowCustodySetup(true)}
-            style={{
-              padding: '16px 32px',
-              background: custodySchedule ? 'white' : '#4facfe',
-              color: custodySchedule ? '#4facfe' : 'white',
-              border: custodySchedule ? '2px solid #4facfe' : 'none',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              boxShadow: custodySchedule ? 'none' : '0 4px 12px rgba(79, 172, 254, 0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-          >
-            🏠 {custodySchedule ? 'Edit Custody Schedule' : 'Set Up Custody Schedule'}
-          </button>
-
-          <button
-            onClick={() => setShowFamilySetup(true)}
-            style={{
-              padding: '16px 32px',
-              background: familyId ? 'white' : '#34a853',
-              color: familyId ? '#34a853' : 'white',
-              border: familyId ? '2px solid #34a853' : 'none',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              boxShadow: familyId ? 'none' : '0 4px 12px rgba(52, 168, 83, 0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-          >
-            👨‍👩‍👧 {familyId ? `Family: ${familyId}` : 'Set Up Family'}
-          </button>
-
-          <button
-            onClick={() => setShowParentLinking(true)}
-            style={{
-              padding: '16px 32px',
-              background: linkedParentId ? 'white' : '#ff6b9d',
-              color: linkedParentId ? '#ff6b9d' : 'white',
-              border: linkedParentId ? '2px solid #ff6b9d' : 'none',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              boxShadow: linkedParentId ? 'none' : '0 4px 12px rgba(255, 107, 157, 0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-          >
-            👥 {linkedParentId ? 'Co-Parent Linked' : 'Link Co-Parent'}
-          </button>
-        </div>
-
-        {/* Custody Calendar */}
-        {custodySchedule && (
-          <div style={{ marginBottom: '24px' }}>
-            <CustodyCalendar custodySchedule={custodySchedule} />
+            <h1 style={{ margin: 0, color: '#333', fontSize: '20px' }}>HarmonyHub</h1>
+            <p style={{ margin: '2px 0 0 0', color: '#888', fontSize: '12px' }}>
+              {currentUserName || 'Parent Dashboard'}
+            </p>
           </div>
-        )}
+          <NotificationCenter userId={user.uid} />
+        </div>
 
-        {/* Shared Expense Tracker */}
-        {familyId && (
-          <ExpenseTracker
-            familyId={familyId}
-            linkedParentId={linkedParentId}
-            currentUserName={currentUserName}
-          />
-        )}
+        {/* EVENTS TAB */}
+        {activeTab === 'events' && (
+          <div>
+            <button
+              onClick={() => setShowAddEvent(true)}
+              style={{
+                width: '100%',
+                padding: '14px',
+                background: '#667eea',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              <span style={{ fontSize: '20px' }}>+</span> Add New Event
+            </button>
 
-        {/* Co-Parent Messaging */}
-        <MessageThread
-          familyId={familyId}
-          linkedParentId={linkedParentId}
-          currentUserName={currentUserName}
-        />
-
-        {/* Search and Filter Bar */}
-        {events.length > 0 && (
-          <div style={{
-            background: 'white',
-            borderRadius: '12px',
-            padding: '24px',
-            marginBottom: '24px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ margin: '0 0 16px 0', color: '#333', fontSize: '16px' }}>
-              🔍 Search & Filter Events
-            </h3>
-
-            {/* Search Input */}
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by title or location..."
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    boxSizing: 'border-box'
-                  }}
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    style={{
-                      padding: '12px 16px',
-                      background: '#f5f7fa',
-                      border: '1px solid #ddd',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      color: '#666'
-                    }}
-                  >
-                    ✕ Clear
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Category Filter */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500', fontSize: '14px' }}>
-                Category
-              </label>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => setFilterCategory('')}
-                  style={{
-                    padding: '8px 16px',
-                    background: filterCategory === '' ? '#667eea' : 'white',
-                    color: filterCategory === '' ? 'white' : '#667eea',
-                    border: filterCategory === '' ? 'none' : '2px solid #667eea',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    fontSize: '14px'
-                  }}
-                >
-                  All
-                </button>
-                {['School', 'Sports', 'Medical', 'Activities', 'Family', 'Other'].map(category => (
-                  <button
-                    key={category}
-                    onClick={() => setFilterCategory(filterCategory === category ? '' : category)}
-                    style={{
-                      padding: '8px 16px',
-                      background: filterCategory === category ? '#667eea' : 'white',
-                      color: filterCategory === category ? 'white' : '#667eea',
-                      border: filterCategory === category ? 'none' : '2px solid #667eea',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      fontSize: '14px'
-                    }}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Date Range Filter */}
-            <div style={{ marginBottom: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500', fontSize: '14px' }}>
-                  From Date
-                </label>
-                <input
-                  type="date"
-                  value={filterDateRange.start}
-                  onChange={(e) => setFilterDateRange({ ...filterDateRange, start: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500', fontSize: '14px' }}>
-                  To Date
-                </label>
-                <input
-                  type="date"
-                  value={filterDateRange.end}
-                  onChange={(e) => setFilterDateRange({ ...filterDateRange, end: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Sort and Clear Buttons */}
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <label style={{ color: '#666', fontWeight: '500', fontSize: '14px' }}>Sort by:</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  style={{
-                    padding: '8px 12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <option value="date">Date</option>
-                  <option value="title">Title</option>
-                  <option value="category">Category</option>
-                </select>
-              </div>
-
-              {(searchTerm || filterCategory || filterDateRange.start || filterDateRange.end || sortBy !== 'date') && (
-                <button
-                  onClick={() => {
-                    setSearchTerm('');
-                    setFilterCategory('');
-                    setFilterDateRange({ start: '', end: '' });
-                    setSortBy('date');
-                  }}
-                  style={{
-                    padding: '8px 16px',
-                    background: '#f5f7fa',
-                    color: '#666',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    fontSize: '14px'
-                  }}
-                >
-                  Clear All Filters
-                </button>
+            {/* Search */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search events..."
+                style={{
+                  flex: 1, padding: '10px 14px', border: '1px solid #ddd',
+                  borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box'
+                }}
+              />
+              {searchTerm && (
+                <button onClick={() => setSearchTerm('')} style={{
+                  padding: '10px 14px', background: '#f5f7fa', border: '1px solid #ddd',
+                  borderRadius: '8px', cursor: 'pointer', color: '#666', fontWeight: 'bold'
+                }}>✕</button>
               )}
             </div>
 
-            {/* Results Summary */}
-            {events.length > 0 && (
-              <div style={{ marginTop: '12px', color: '#888', fontSize: '14px' }}>
-                Showing {filteredEvents.length} of {events.length} events
-              </div>
-            )}
+            {/* Category pills */}
+            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px' }}>
+              {['All', 'School', 'Sports', 'Medical', 'Activities', 'Family', 'Other'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setFilterCategory(cat === 'All' ? '' : (filterCategory === cat ? '' : cat))}
+                  style={{
+                    padding: '6px 14px', borderRadius: '20px', border: 'none', cursor: 'pointer',
+                    background: (cat === 'All' && filterCategory === '') || filterCategory === cat ? '#667eea' : '#eee',
+                    color: (cat === 'All' && filterCategory === '') || filterCategory === cat ? 'white' : '#555',
+                    fontWeight: '600', fontSize: '13px', flexShrink: 0, whiteSpace: 'nowrap'
+                  }}
+                >{cat}</button>
+              ))}
+            </div>
+
+            {/* Events List */}
+            <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <h2 style={{ marginTop: 0, color: '#333', fontSize: '17px' }}>Upcoming Events</h2>
+              {loading ? (
+                <p style={{ color: '#666', textAlign: 'center', padding: '32px' }}>Loading...</p>
+              ) : events.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px', color: '#666' }}>
+                  <p style={{ fontSize: '40px', margin: '0 0 12px 0' }}>📅</p>
+                  <p style={{ margin: 0 }}>No events yet. Tap "Add New Event" to start!</p>
+                </div>
+              ) : filteredEvents.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px', color: '#666' }}>
+                  <p style={{ fontSize: '40px', margin: '0 0 12px 0' }}>🔍</p>
+                  <p style={{ margin: 0 }}>No events match your search.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {filteredEvents.map(event => (
+                    <div key={event.id} style={{
+                      padding: '12px', border: `2px solid ${event.color}`,
+                      borderLeft: `6px solid ${event.color}`, borderRadius: '8px',
+                      background: `${event.color}10`
+                    }}>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '26px', flexShrink: 0 }}>{event.icon}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 'bold', color: '#333', fontSize: '15px', wordBreak: 'break-word' }}>{event.title}</div>
+                          <div style={{ color: '#666', fontSize: '12px', marginTop: '2px' }}>
+                            {formatDate(event.date)}{event.time && ` at ${event.time}`}
+                            {event.location && ` • ${event.location}`}
+                          </div>
+                          {event.notes && <div style={{ color: '#888', fontSize: '11px', marginTop: '2px' }}>{event.notes}</div>}
+                        </div>
+                        <div style={{
+                          background: event.color, color: 'white', padding: '2px 7px',
+                          borderRadius: '10px', fontSize: '10px', fontWeight: 'bold', flexShrink: 0
+                        }}>{event.category}</div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                        {event.isRecurring && (
+                          <span style={{
+                            background: '#667eea', color: 'white', padding: '3px 8px',
+                            borderRadius: '10px', fontSize: '10px', fontWeight: 'bold'
+                          }}>🔄 Recurring</span>
+                        )}
+                        <button onClick={() => openEditEvent(event.id)} style={{
+                          background: '#4facfe', color: 'white', border: 'none',
+                          borderRadius: '8px', padding: '5px 14px', cursor: 'pointer',
+                          fontWeight: 'bold', fontSize: '13px'
+                        }}>Edit</button>
+                        <button onClick={() => deleteEvent(event.id)} style={{
+                          background: '#ff4444', color: 'white', border: 'none',
+                          borderRadius: '8px', padding: '5px 14px', cursor: 'pointer',
+                          fontWeight: 'bold', fontSize: '13px'
+                        }}>Delete</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Events List */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{ marginTop: 0, color: '#333' }}>Upcoming Events</h2>
-          
-          {loading ? (
-            <p style={{ color: '#666', textAlign: 'center', padding: '40px' }}>Loading events...</p>
-          ) : events.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-              <p style={{ fontSize: '48px', margin: '0 0 16px 0' }}>📅</p>
-              <p style={{ margin: 0 }}>No events yet. Click "Add New Event" to get started!</p>
-            </div>
-          ) : filteredEvents.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-              <p style={{ fontSize: '48px', margin: '0 0 16px 0' }}>🔍</p>
-              <p style={{ margin: 0 }}>No events match your filters. Try adjusting your search or filters.</p>
-            </div>
+        {/* CALENDAR TAB */}
+        {activeTab === 'calendar' && (
+          <div>
+            {custodySchedule ? (
+              <CustodyCalendar custodySchedule={custodySchedule} />
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                <p style={{ fontSize: '40px', margin: '0 0 12px 0' }}>🏠</p>
+                <p style={{ color: '#666', marginBottom: '16px' }}>No custody schedule set up yet.</p>
+                <button onClick={() => setShowCustodySetup(true)} style={{
+                  padding: '12px 24px', background: '#4facfe', color: 'white',
+                  border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer'
+                }}>Set Up Custody Schedule</button>
+              </div>
+            )}
+            {custodySchedule && (
+              <button onClick={() => setShowCustodySetup(true)} style={{
+                width: '100%', marginTop: '12px', padding: '12px',
+                background: 'white', color: '#4facfe', border: '2px solid #4facfe',
+                borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
+              }}>Edit Custody Schedule</button>
+            )}
+            <CalendarExport events={events} custodySchedule={custodySchedule} />
+          </div>
+        )}
+
+        {/* MESSAGES TAB */}
+        {activeTab === 'messages' && (
+          <MessageThread
+            familyId={familyId}
+            linkedParentId={linkedParentId}
+            currentUserName={currentUserName}
+            fullPage
+          />
+        )}
+
+        {/* EXPENSES TAB */}
+        {activeTab === 'expenses' && (
+          familyId ? (
+            <ExpenseTracker
+              familyId={familyId}
+              linkedParentId={linkedParentId}
+              currentUserName={currentUserName}
+            />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {filteredEvents.map(event => (
-                <div
-                  key={event.id}
-                  style={{
-                    padding: '12px',
-                    border: `2px solid ${event.color}`,
-                    borderLeft: `6px solid ${event.color}`,
-                    borderRadius: '8px',
-                    background: `${event.color}10`,
-                  }}
-                >
-                  {/* Top row: icon + info */}
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '10px' }}>
-                    <div style={{ fontSize: '28px', flexShrink: 0 }}>{event.icon}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 'bold', color: '#333', fontSize: '16px', wordBreak: 'break-word' }}>{event.title}</div>
-                      <div style={{ color: '#666', fontSize: '13px', marginTop: '2px' }}>
-                        {formatDate(event.date)} {event.time && `at ${event.time}`}
-                        {event.location && ` • ${event.location}`}
-                      </div>
-                      {event.notes && (
-                        <div style={{ color: '#888', fontSize: '12px', marginTop: '2px', wordBreak: 'break-word' }}>
-                          {event.notes}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{
-                      background: event.color,
-                      color: 'white',
-                      padding: '3px 8px',
-                      borderRadius: '12px',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      flexShrink: 0
-                    }}>
-                      {event.category}
-                    </div>
-                  </div>
-                  {/* Bottom row: buttons */}
-                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                    {event.isRecurring && (
-                      <div style={{
-                        background: '#667eea',
-                        color: 'white',
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}>
-                        🔄 Recurring
-                      </div>
-                    )}
-                    <button
-                      onClick={() => openEditEvent(event.id)}
-                      style={{
-                        background: '#4facfe',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '6px 16px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        fontSize: '13px'
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteEvent(event.id)}
-                      style={{
-                        background: '#ff4444',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '6px 16px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        fontSize: '13px'
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <p style={{ fontSize: '40px', margin: '0 0 12px 0' }}>💰</p>
+              <p style={{ color: '#666' }}>Set up a family group to track shared expenses.</p>
             </div>
-          )}
-        </div>
+          )
+        )}
+
+        {/* SETTINGS TAB */}
+        {activeTab === 'settings' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Account</h3>
+              <p style={{ margin: '0 0 4px 0', color: '#666', fontSize: '14px' }}>Logged in as <strong>{user.email}</strong></p>
+              <p style={{ margin: '0 0 16px 0', color: '#888', fontSize: '13px' }}>Name: {currentUserName}</p>
+              <button onClick={handleLogout} style={{
+                width: '100%', padding: '12px', background: 'white', color: '#ff4444',
+                border: '2px solid #ff4444', borderRadius: '10px', fontWeight: 'bold',
+                cursor: 'pointer', fontSize: '14px'
+              }}>Log Out</button>
+            </div>
+
+            <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Family</h3>
+              <button onClick={() => setShowFamilySetup(true)} style={{
+                width: '100%', padding: '12px', marginBottom: '8px',
+                background: familyId ? 'white' : '#34a853', color: familyId ? '#34a853' : 'white',
+                border: familyId ? '2px solid #34a853' : 'none',
+                borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
+              }}>👨‍👩‍👧 {familyId ? `Family Code: ${familyId}` : 'Set Up Family'}</button>
+              <button onClick={() => setShowParentLinking(true)} style={{
+                width: '100%', padding: '12px',
+                background: linkedParentId ? 'white' : '#ff6b9d',
+                color: linkedParentId ? '#ff6b9d' : 'white',
+                border: linkedParentId ? '2px solid #ff6b9d' : 'none',
+                borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
+              }}>👥 {linkedParentId ? 'Co-Parent Linked ✓' : 'Link Co-Parent'}</button>
+            </div>
+          </div>
+        )}
+
       </div>
+
+      <BottomTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Add Event Modal */}
       {showAddEvent && (

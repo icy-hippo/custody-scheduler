@@ -8,6 +8,7 @@ import PackList from '../components/PackList';
 import FamilySetup from '../components/FamilySetup';
 import NotificationCenter from '../components/NotificationCenter';
 import VisualSchedule from '../components/VisualSchedule';
+import BottomTabBar from '../components/BottomTabBar';
 
 function ChildDashboard() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ function ChildDashboard() {
   const [custodySchedule, setCustodySchedule] = useState(null);
   const [showFamilySetup, setShowFamilySetup] = useState(false);
   const [familyId, setFamilyId] = useState(null);
+  const [activeTab, setActiveTab] = useState('today');
 
   // Listen for auth state
   useEffect(() => {
@@ -176,12 +178,20 @@ function ChildDashboard() {
   const todayEvents = getTodayEvents();
   const nextEvent = getNextEvent();
 
+  const tabs = [
+    { id: 'today', icon: '🏠', label: 'Today', badge: todayEvents.length },
+    { id: 'week', icon: '🗓️', label: 'Week' },
+    { id: 'pack', icon: '🎒', label: 'Pack' },
+    { id: 'upcoming', icon: '📆', label: 'Coming Up' },
+    { id: 'more', icon: '⚙️', label: 'More' },
+  ];
+
   if (!user) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center'
       }}>
         <p style={{ color: '#666' }}>Loading...</p>
@@ -190,231 +200,162 @@ function ChildDashboard() {
   }
 
   return (
-    <div style={{ 
+    <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-      padding: '24px',
+      paddingBottom: '72px',
       fontFamily: 'system-ui'
     }}>
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginBottom: '24px'
-        }}>
-          <div>
-            <h1 style={{ margin: 0, color: '#333', fontSize: '32px' }}>My Schedule 📅</h1>
-            <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '16px' }}>
-              {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {user && <NotificationCenter userId={user.uid} />}
-            {!familyId && (
-              <button
-                onClick={() => setShowFamilySetup(true)}
-                style={{
-                  padding: '8px 16px',
-                  background: '#34a853',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '20px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  fontSize: '12px'
-                }}
-              >
-                Join Family
-              </button>
-            )}
-            <button
-              onClick={handleLogout}
-              style={{
-                padding: '10px 20px',
-                background: 'white',
-                color: '#667eea',
-                border: '2px solid #667eea',
-                borderRadius: '20px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                fontSize: '14px'
-              }}
-            >
-              Logout
-            </button>
-          </div>
+      {/* Header */}
+      <div style={{
+        background: 'white',
+        padding: '16px 20px 12px 20px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div>
+          <h1 style={{ margin: 0, color: '#333', fontSize: '20px', fontWeight: '700' }}>My Schedule</h1>
+          <p style={{ margin: '2px 0 0 0', color: '#888', fontSize: '12px' }}>
+            {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          </p>
         </div>
+        {user && <NotificationCenter userId={user.uid} />}
+      </div>
 
-        {/* Where Am I Today */}
-        <WhereAmI custodySchedule={custodySchedule} />
+      <div style={{ padding: '20px 16px', maxWidth: '700px', margin: '0 auto' }}>
+        {/* TODAY TAB */}
+        {activeTab === 'today' && (
+          <>
+            <WhereAmI custodySchedule={custodySchedule} />
 
-        {/* 7-Day Visual Schedule */}
-        <VisualSchedule custodySchedule={custodySchedule} events={events} />
-
-        {/* Pack List */}
-        <PackList events={events} custodySchedule={custodySchedule} />
-
-        {/* What's Next Card */}
-        {nextEvent ? (
-          <div style={{
-            background: 'white',
-            borderRadius: '20px',
-            padding: '32px',
-            marginBottom: '24px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-            border: `4px solid ${nextEvent.color}`
-          }}>
-            <div style={{ 
-              fontSize: '14px', 
-              color: '#888', 
-              textTransform: 'uppercase',
-              fontWeight: 'bold',
-              marginBottom: '8px'
-            }}>
-              ⏰ What's Next
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{ fontSize: '64px' }}>{nextEvent.icon}</div>
-              <div style={{ flex: 1 }}>
-                <h2 style={{ margin: 0, fontSize: '28px', color: '#333' }}>{nextEvent.title}</h2>
-                <p style={{ margin: '8px 0', color: '#666', fontSize: '18px' }}>
-                  {formatDate(nextEvent.date)} {nextEvent.time && `at ${formatTime(nextEvent.time)}`}
-                </p>
-                {nextEvent.location && (
-                  <p style={{ margin: 0, color: '#888', fontSize: '16px' }}>
-                    📍 {nextEvent.location}
-                  </p>
-                )}
-              </div>
+            {nextEvent && (
               <div style={{
-                background: nextEvent.color,
-                color: 'white',
-                padding: '12px 24px',
+                background: 'white',
                 borderRadius: '20px',
-                fontWeight: 'bold',
-                fontSize: '18px'
+                padding: '20px',
+                marginBottom: '16px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                border: `3px solid ${nextEvent.color}`
               }}>
-                {nextEvent.category}
+                <div style={{ fontSize: '12px', color: '#888', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  ⏰ What's Next
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ fontSize: '48px' }}>{nextEvent.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '18px', color: '#333' }}>{nextEvent.title}</div>
+                    <div style={{ color: '#666', fontSize: '14px', marginTop: '4px' }}>
+                      {formatDate(nextEvent.date)}{nextEvent.time && ` at ${formatTime(nextEvent.time)}`}
+                    </div>
+                    {nextEvent.location && (
+                      <div style={{ color: '#888', fontSize: '13px', marginTop: '2px' }}>📍 {nextEvent.location}</div>
+                    )}
+                  </div>
+                </div>
               </div>
+            )}
+
+            <div style={{ background: 'white', borderRadius: '20px', padding: '20px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
+              <h2 style={{ marginTop: 0, color: '#333', fontSize: '18px' }}>📋 Today's Schedule</h2>
+              {loading ? (
+                <p style={{ color: '#666', textAlign: 'center', padding: '24px' }}>Loading...</p>
+              ) : todayEvents.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px', color: '#666' }}>
+                  <p style={{ fontSize: '40px', margin: '0 0 12px 0' }}>😊</p>
+                  <p style={{ margin: 0, fontSize: '16px' }}>Nothing scheduled for today!</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {todayEvents.map(event => (
+                    <div key={event.id} style={{
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      padding: '16px', background: `${event.color}15`,
+                      border: `2px solid ${event.color}`, borderRadius: '14px'
+                    }}>
+                      <div style={{ fontSize: '36px' }}>{event.icon}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>{event.title}</div>
+                        <div style={{ color: '#666', fontSize: '13px', marginTop: '2px' }}>
+                          {event.time ? formatTime(event.time) : 'All day'}{event.location && ` • ${event.location}`}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        ) : (
-          <div style={{
-            background: 'white',
-            borderRadius: '20px',
-            padding: '40px',
-            marginBottom: '24px',
-            textAlign: 'center',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎉</div>
-            <h2 style={{ margin: 0, color: '#333' }}>No upcoming events!</h2>
-            <p style={{ color: '#666', marginTop: '8px' }}>Enjoy your free time!</p>
+          </>
+        )}
+
+        {/* WEEK TAB */}
+        {activeTab === 'week' && (
+          <VisualSchedule custodySchedule={custodySchedule} events={events} />
+        )}
+
+        {/* PACK TAB */}
+        {activeTab === 'pack' && (
+          <PackList events={events} custodySchedule={custodySchedule} />
+        )}
+
+        {/* COMING UP TAB */}
+        {activeTab === 'upcoming' && (
+          <div style={{ background: 'white', borderRadius: '20px', padding: '20px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
+            <h2 style={{ marginTop: 0, color: '#333', fontSize: '18px' }}>📆 Coming Up</h2>
+            {events.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '32px', color: '#666' }}>
+                <p style={{ fontSize: '40px', margin: '0 0 12px 0' }}>📭</p>
+                <p style={{ margin: 0 }}>No upcoming events</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {events.map(event => (
+                  <div key={event.id} style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    padding: '14px', background: `${event.color}15`,
+                    border: `2px solid ${event.color}`, borderRadius: '12px'
+                  }}>
+                    <div style={{ fontSize: '32px' }}>{event.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '15px', color: '#333' }}>{event.title}</div>
+                      <div style={{ color: '#666', fontSize: '12px', marginTop: '2px' }}>{formatDate(event.date)}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Today's Schedule */}
-        <div style={{
-          background: 'white',
-          borderRadius: '20px',
-          padding: '32px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{ marginTop: 0, color: '#333', fontSize: '24px' }}>
-            📋 Today's Schedule
-          </h2>
-          
-          {loading ? (
-            <p style={{ color: '#666', textAlign: 'center', padding: '40px' }}>Loading...</p>
-          ) : todayEvents.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-              <p style={{ fontSize: '48px', margin: '0 0 16px 0' }}>😊</p>
-              <p style={{ margin: 0, fontSize: '18px' }}>Nothing scheduled for today!</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {todayEvents.map(event => (
-                <div 
-                  key={event.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '16px',
-                    padding: '20px',
-                    background: `${event.color}15`,
-                    border: `3px solid ${event.color}`,
-                    borderRadius: '16px'
-                  }}
-                >
-                  <div style={{ fontSize: '48px' }}>{event.icon}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '20px', color: '#333' }}>
-                      {event.title}
-                    </div>
-                    <div style={{ color: '#666', fontSize: '16px', marginTop: '4px' }}>
-                      {event.time ? formatTime(event.time) : 'All day'}
-                      {event.location && ` • ${event.location}`}
-                    </div>
-                  </div>
-                  <div style={{
-                    background: event.color,
-                    color: 'white',
-                    padding: '8px 16px',
-                    borderRadius: '12px',
-                    fontWeight: 'bold',
-                    fontSize: '14px'
-                  }}>
-                    {event.category}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* This Week Preview */}
-        {events.length > 0 && (
-          <div style={{
-            background: 'white',
-            borderRadius: '20px',
-            padding: '32px',
-            marginTop: '24px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
-          }}>
-            <h2 style={{ marginTop: 0, color: '#333', fontSize: '24px' }}>
-              📆 Coming Up
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-              {events.slice(0, 6).map(event => (
-                <div 
-                  key={event.id}
-                  style={{
-                    padding: '16px',
-                    background: `${event.color}15`,
-                    border: `2px solid ${event.color}`,
-                    borderRadius: '12px',
-                    textAlign: 'center'
-                  }}
-                >
-                  <div style={{ fontSize: '36px', marginBottom: '8px' }}>{event.icon}</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#333' }}>
-                    {event.title}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                    {formatDate(event.date)}
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* MORE TAB */}
+        {activeTab === 'more' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {!familyId && (
+              <button onClick={() => setShowFamilySetup(true)} style={{
+                width: '100%', padding: '18px', background: 'white',
+                border: '2px solid #34a853', borderRadius: '16px',
+                color: '#34a853', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer'
+              }}>
+                🏠 Join Family
+              </button>
+            )}
+            <button onClick={handleLogout} style={{
+              width: '100%', padding: '18px', background: 'white',
+              border: '2px solid #ff4444', borderRadius: '16px',
+              color: '#ff4444', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer'
+            }}>
+              🚪 Logout
+            </button>
           </div>
         )}
       </div>
 
+      <BottomTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+
       {/* Family Setup Modal */}
       {showFamilySetup && (
-        <FamilySetup 
+        <FamilySetup
           onClose={() => setShowFamilySetup(false)}
           onFamilyJoined={() => {
             loadFamily();
