@@ -8,22 +8,20 @@ function CustodyCalendar({ custodySchedule }) {
       <div style={{
         background: 'white',
         borderRadius: '16px',
-        padding: '32px',
+        padding: '24px',
         textAlign: 'center',
         color: '#666'
       }}>
-        <p style={{ fontSize: '18px', margin: 0 }}>Set up a custody schedule to see the calendar</p>
+        <p style={{ fontSize: '16px', margin: 0 }}>Set up a custody schedule to see the calendar</p>
       </div>
     );
   }
 
   const { pattern, startDate, parent1Name, parent2Name } = custodySchedule;
 
-  // Color scheme for parents
   const parent1Color = '#ff6b9d';
   const parent2Color = '#4facfe';
 
-  // Determine which parent has custody on a given date
   const getParentForDate = (date) => {
     const start = new Date(startDate);
     const daysDiff = Math.floor((date - start) / (1000 * 60 * 60 * 24));
@@ -40,316 +38,146 @@ function CustodyCalendar({ custodySchedule }) {
       const dayOfWeek = date.getDay();
       return (dayOfWeek === 0 || dayOfWeek === 6) ? parent2Name : parent1Name;
     }
-
     return parent1Name;
   };
 
-  const getColorForDate = (date) => {
-    const parent = getParentForDate(date);
-    return parent === parent1Name ? parent1Color : parent2Color;
-  };
+  const getDaysInMonth = (date) =>
+    new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 
-  // Get all days in current month
-  const getDaysInMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
+  const getFirstDayOfMonth = (date) =>
+    new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
-  const getFirstDayOfMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
-
-  // Navigate months
-  const goToPreviousMonth = () => {
+  const goToPreviousMonth = () =>
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
-  };
 
-  const goToNextMonth = () => {
+  const goToNextMonth = () =>
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
-  };
 
-  const goToToday = () => {
-    setCurrentDate(new Date());
-  };
-
-  // Generate calendar grid
   const generateCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDay = getFirstDayOfMonth(currentDate);
     const days = [];
-
-    // Empty cells for days before month starts
-    for (let i = 0; i < firstDay; i++) {
-      days.push(null);
-    }
-
-    // Days of the month
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(i);
-    }
-
+    for (let i = 0; i < firstDay; i++) days.push(null);
+    for (let i = 1; i <= daysInMonth; i++) days.push(i);
     return days;
   };
 
   const calendarDays = generateCalendarDays();
   const today = new Date();
-  const isCurrentMonth = currentDate.getMonth() === today.getMonth() && 
-                         currentDate.getFullYear() === today.getFullYear();
+  const isCurrentMonth =
+    currentDate.getMonth() === today.getMonth() &&
+    currentDate.getFullYear() === today.getFullYear();
 
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
   return (
-    <div style={{
-      background: 'white',
-      borderRadius: '16px',
-      padding: '16px',
-      boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
-    }}>
-      <div style={{ marginBottom: '32px' }}>
-        <h2 style={{ margin: '0 0 24px 0', color: '#333', fontSize: '22px' }}>
-          📅 Custody Schedule
-        </h2>
+    <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
 
-        {/* Month Navigation */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '24px',
-          padding: '16px',
-          background: '#f8f9fa',
-          borderRadius: '12px'
-        }}>
-          <button
-            onClick={goToPreviousMonth}
-            style={{
-              background: 'white',
-              border: '2px solid #ddd',
-              borderRadius: '8px',
-              padding: '8px 16px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              color: '#333',
-              fontSize: '14px'
-            }}
-          >
-            ← Previous
-          </button>
-
-          <div style={{ textAlign: 'center' }}>
-            <h3 style={{ margin: 0, color: '#333', fontSize: '24px', fontWeight: 'bold' }}>
-              {monthName}
-            </h3>
-          </div>
-
-          <button
-            onClick={goToNextMonth}
-            style={{
-              background: 'white',
-              border: '2px solid #ddd',
-              borderRadius: '8px',
-              padding: '8px 16px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              color: '#333',
-              fontSize: '14px'
-            }}
-          >
-            Next →
-          </button>
+      {/* Month navigation */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <button onClick={goToPreviousMonth} style={navBtnStyle}>‹</button>
+        <div style={{ textAlign: 'center', flex: 1 }}>
+          <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>{monthName}</div>
+          {isCurrentMonth && (
+            <button
+              onClick={() => setCurrentDate(new Date())}
+              style={{ background: 'none', border: 'none', color: '#667eea', fontSize: '12px', cursor: 'pointer', padding: '2px 0', fontWeight: '600' }}
+            >
+              Today
+            </button>
+          )}
         </div>
+        <button onClick={goToNextMonth} style={navBtnStyle}>›</button>
+      </div>
 
-        {isCurrentMonth && (
-          <button
-            onClick={goToToday}
-            style={{
-              background: '#667eea',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '10px 20px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              marginBottom: '16px'
-            }}
-          >
-            Today
-          </button>
-        )}
-
-        {/* Legend */}
-        <div style={{
-          display: 'flex',
-          gap: '24px',
-          justifyContent: 'center',
-          marginBottom: '24px',
-          flexWrap: 'wrap'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '24px',
-              height: '24px',
-              background: parent1Color,
-              borderRadius: '6px'
-            }} />
-            <span style={{ color: '#333', fontWeight: '500' }}>{parent1Name}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '24px',
-              height: '24px',
-              background: parent2Color,
-              borderRadius: '6px'
-            }} />
-            <span style={{ color: '#333', fontWeight: '500' }}>{parent2Name}</span>
-          </div>
+      {/* Legend */}
+      <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#555' }}>
+          <div style={{ width: '12px', height: '12px', background: parent1Color, borderRadius: '3px' }} />
+          {parent1Name}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#555' }}>
+          <div style={{ width: '12px', height: '12px', background: parent2Color, borderRadius: '3px' }} />
+          {parent2Name}
         </div>
       </div>
 
-      {/* Calendar Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: '8px'
-      }}>
-        {/* Week day headers */}
-        {weekDays.map(day => (
-          <div
-            key={day}
-            style={{
-              textAlign: 'center',
-              fontWeight: 'bold',
-              color: '#666',
-              padding: '12px 8px',
-              fontSize: '14px',
-              borderBottom: '2px solid #eee'
-            }}
-          >
-            {day}
+      {/* Calendar grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
+        {weekDays.map((d, i) => (
+          <div key={i} style={{ textAlign: 'center', fontWeight: '700', color: '#999', fontSize: '11px', paddingBottom: '6px' }}>
+            {d}
           </div>
         ))}
 
-        {/* Calendar days */}
         {calendarDays.map((day, index) => {
           if (day === null) {
-            return (
-              <div
-                key={`empty-${index}`}
-                style={{
-                  aspectRatio: '1',
-                  background: '#f8f9fa',
-                  borderRadius: '8px'
-                }}
-              />
-            );
+            return <div key={`empty-${index}`} style={{ aspectRatio: '1' }} />;
           }
 
           const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
           const isToday = isCurrentMonth && day === today.getDate();
-          const color = getColorForDate(date);
           const parent = getParentForDate(date);
+          const color = parent === parent1Name ? parent1Color : parent2Color;
 
           return (
             <div
               key={day}
               style={{
                 aspectRatio: '1',
-                background: `${color}15`,
-                border: isToday ? `3px solid ${color}` : `2px solid ${color}`,
+                background: isToday ? color : `${color}22`,
+                border: `2px solid ${color}`,
                 borderRadius: '8px',
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                padding: '4px',
                 boxSizing: 'border-box',
                 position: 'relative'
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = `0 4px 12px ${color}40`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
             >
-              <div
-                style={{
-                  fontWeight: isToday ? 'bold' : '600',
-                  color: color,
-                  fontSize: isToday ? '18px' : '16px'
-                }}
-              >
+              <span style={{
+                fontWeight: isToday ? 'bold' : '600',
+                color: isToday ? 'white' : color,
+                fontSize: '13px'
+              }}>
                 {day}
-              </div>
-              <div
-                style={{
-                  fontSize: '10px',
-                  color: color,
-                  fontWeight: 'bold',
-                  marginTop: '2px',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '100%'
-                }}
-              >
-                {parent === parent1Name ? '👤 1' : '👤 2'}
-              </div>
-              {isToday && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '2px',
-                    right: '2px',
-                    width: '8px',
-                    height: '8px',
-                    background: color,
-                    borderRadius: '50%'
-                  }}
-                />
-              )}
+              </span>
             </div>
           );
         })}
       </div>
 
-      {/* Schedule Info */}
-      <div style={{
-        marginTop: '32px',
-        padding: '24px',
-        background: '#f8f9fa',
-        borderRadius: '12px',
-        borderLeft: `4px solid #667eea`
-      }}>
-        <h3 style={{ margin: '0 0 12px 0', color: '#333' }}>Schedule Pattern</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-          <div>
-            <div style={{ color: '#666', fontSize: '12px', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '4px' }}>
-              Pattern
-            </div>
-            <div style={{ color: '#333', fontWeight: 'bold', fontSize: '16px' }}>
-              {pattern === 'alternating-weeks' && '📅 Alternating Weeks'}
-              {pattern === '2-2-3' && '🔄 2-2-3 Schedule'}
-              {pattern === 'weekday-weekend' && '📆 Weekday/Weekend Split'}
-            </div>
-          </div>
-          <div>
-            <div style={{ color: '#666', fontSize: '12px', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '4px' }}>
-              Start Date
-            </div>
-            <div style={{ color: '#333', fontWeight: 'bold', fontSize: '16px' }}>
-              {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            </div>
-          </div>
+      {/* Schedule info */}
+      <div style={{ marginTop: '16px', padding: '12px', background: '#f8f9fa', borderRadius: '10px', borderLeft: '3px solid #667eea' }}>
+        <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '4px' }}>Pattern</div>
+        <div style={{ color: '#333', fontWeight: 'bold', fontSize: '14px' }}>
+          {pattern === 'alternating-weeks' && '📅 Alternating Weeks'}
+          {pattern === '2-2-3' && '🔄 2-2-3 Schedule'}
+          {pattern === 'weekday-weekend' && '📆 Weekday/Weekend Split'}
+        </div>
+        <div style={{ fontSize: '11px', color: '#888', textTransform: 'uppercase', fontWeight: 'bold', marginTop: '8px', marginBottom: '4px' }}>Start Date</div>
+        <div style={{ color: '#333', fontWeight: 'bold', fontSize: '14px' }}>
+          {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
         </div>
       </div>
     </div>
   );
 }
+
+const navBtnStyle = {
+  background: '#f0f0f0',
+  border: 'none',
+  borderRadius: '8px',
+  width: '36px',
+  height: '36px',
+  fontSize: '20px',
+  cursor: 'pointer',
+  color: '#333',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontWeight: 'bold'
+};
 
 export default CustodyCalendar;
