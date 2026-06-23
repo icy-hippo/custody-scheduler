@@ -275,7 +275,7 @@ function ParentDashboard() {
       }
     });
 
-    let filtered = [...nonRecurring, ...Object.values(recurringGroupMap)];
+    let filtered = [...nonRecurring.filter(e => e.date >= today), ...Object.values(recurringGroupMap)];
 
     // Search filter (title + location)
     if (searchTerm) {
