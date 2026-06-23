@@ -2,6 +2,8 @@ import { useState } from 'react';
 
 function CustodyCalendar({ custodySchedule, events = [] }) {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDayEvents, setSelectedDayEvents] = useState(null);
+  const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
 
   if (!custodySchedule) {
     return (
@@ -137,7 +139,18 @@ function CustodyCalendar({ custodySchedule, events = [] }) {
                 justifyContent: 'center',
                 boxSizing: 'border-box',
                 position: 'relative',
-                gap: '2px'
+                gap: '2px',
+                cursor: dayEvents.length > 0 ? 'pointer' : 'default'
+              }}
+              onClick={(e) => {
+                if (dayEvents.length === 0) return;
+                if (selectedDayEvents && selectedDayEvents.dateStr === dateStr) {
+                  setSelectedDayEvents(null);
+                  return;
+                }
+                const rect = e.currentTarget.getBoundingClientRect();
+                setPopupPos({ x: rect.left, y: rect.bottom + 6 });
+                setSelectedDayEvents({ dateStr, events: dayEvents });
               }}
             >
               <span style={{
@@ -150,7 +163,7 @@ function CustodyCalendar({ custodySchedule, events = [] }) {
               {dayEvents.length > 0 && (
                 <div style={{ display: 'flex', gap: '2px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   {dayEvents.slice(0, 3).map((ev, i) => (
-                    <div key={i} title={ev.title} style={{
+                    <div key={i} style={{
                       width: '5px', height: '5px', borderRadius: '50%',
                       background: isToday ? 'white' : ev.color || '#333'
                     }} />
@@ -161,6 +174,45 @@ function CustodyCalendar({ custodySchedule, events = [] }) {
           );
         })}
       </div>
+
+      {/* Event popup */}
+      {selectedDayEvents && (
+        <>
+          <div
+            onClick={() => setSelectedDayEvents(null)}
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 200 }}
+          />
+          <div style={{
+            position: 'fixed',
+            top: Math.min(popupPos.y, window.innerHeight - 200),
+            left: Math.max(8, Math.min(popupPos.x, window.innerWidth - 220)),
+            width: '210px',
+            background: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+            zIndex: 201,
+            overflow: 'hidden'
+          }}>
+            <div style={{ padding: '10px 12px 6px 12px', borderBottom: '1px solid #eee', fontSize: '12px', fontWeight: '700', color: '#666' }}>
+              {new Date(selectedDayEvents.dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            </div>
+            {selectedDayEvents.events.map((ev, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '8px 12px',
+                borderBottom: i < selectedDayEvents.events.length - 1 ? '1px solid #f0f0f0' : 'none'
+              }}>
+                <span style={{ fontSize: '18px' }}>{ev.icon}</span>
+                <div>
+                  <div style={{ fontWeight: '600', fontSize: '13px', color: '#333' }}>{ev.title}</div>
+                  {ev.time && <div style={{ fontSize: '11px', color: '#888' }}>{ev.time}</div>}
+                  {ev.location && <div style={{ fontSize: '11px', color: '#888' }}>📍 {ev.location}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Schedule info */}
       <div style={{ marginTop: '16px', padding: '12px', background: '#f8f9fa', borderRadius: '10px', borderLeft: '3px solid #667eea' }}>
