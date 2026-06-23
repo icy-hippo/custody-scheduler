@@ -256,7 +256,26 @@ function ParentDashboard() {
 
   // Get filtered and sorted events
   const getFilteredAndSortedEvents = () => {
-    let filtered = events;
+    const today = new Date().toISOString().split('T')[0];
+
+    // For recurring events, only keep the next upcoming instance per group
+    const recurringGroupMap = {};
+    const nonRecurring = [];
+
+    events.forEach(event => {
+      if (event.isRecurring && event.recurringEventGroupId) {
+        const gid = event.recurringEventGroupId;
+        if (event.date >= today) {
+          if (!recurringGroupMap[gid] || event.date < recurringGroupMap[gid].date) {
+            recurringGroupMap[gid] = event;
+          }
+        }
+      } else {
+        nonRecurring.push(event);
+      }
+    });
+
+    let filtered = [...nonRecurring, ...Object.values(recurringGroupMap)];
 
     // Search filter (title + location)
     if (searchTerm) {
