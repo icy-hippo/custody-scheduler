@@ -176,23 +176,39 @@ function ChildDashboard() {
     navigate('/');
   };
 
+  // Deduplicate recurring events — only keep next upcoming instance per group
+  const getDeduplicatedEvents = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const recurringGroupMap = {};
+    const nonRecurring = [];
+
+    events.forEach(event => {
+      if (event.isRecurring && event.recurringEventGroupId) {
+        const gid = event.recurringEventGroupId;
+        if (event.date >= today) {
+          if (!recurringGroupMap[gid] || event.date < recurringGroupMap[gid].date) {
+            recurringGroupMap[gid] = event;
+          }
+        }
+      } else {
+        if (event.date >= today) nonRecurring.push(event);
+      }
+    });
+
+    return [...nonRecurring, ...Object.values(recurringGroupMap)]
+      .sort((a, b) => a.date.localeCompare(b.date));
+  };
+
   // Get today's events
   const getTodayEvents = () => {
     const today = new Date().toISOString().split('T')[0];
-    return events.filter(event => event.date === today);
+    return getDeduplicatedEvents().filter(event => event.date === today);
   };
 
   // Get next upcoming event
   const getNextEvent = () => {
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-    
-    const upcomingEvents = events.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate >= now || event.date === todayStr;
-    });
-    
-    return upcomingEvents[0] || null;
+    const upcoming = getDeduplicatedEvents();
+    return upcoming[0] || null;
   };
 
   // Format time nicely
@@ -430,14 +446,14 @@ function ChildDashboard() {
         {activeTab === 'upcoming' && (
           <div style={{ background: 'white', borderRadius: '20px', padding: '20px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
             <h2 style={{ marginTop: 0, color: '#333', fontSize: '18px' }}>📆 Coming Up</h2>
-            {events.length === 0 ? (
+            {getDeduplicatedEvents().length === 0 ? (
               <div style={{ textAlign: 'center', padding: '32px', color: '#666' }}>
                 <p style={{ fontSize: '40px', margin: '0 0 12px 0' }}>📭</p>
                 <p style={{ margin: 0 }}>No upcoming events</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {events.map(event => (
+                {getDeduplicatedEvents().map(event => (
                   <div key={event.id} style={{
                     display: 'flex', alignItems: 'center', gap: '12px',
                     padding: '14px', background: `${event.color}15`,
