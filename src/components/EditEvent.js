@@ -135,9 +135,9 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
       }
 
       // Notify co-parent about the update
+      const user = auth.currentUser;
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (linkedParentId) {
-        const user = auth.currentUser;
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
         const userName = (userDoc.exists() && userDoc.data().name) || 'Your co-parent';
         await createNotification(
           linkedParentId,
@@ -146,6 +146,29 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
           'event_updated',
           { eventTitle: title, eventDate: date, updatedBy: user.uid }
         );
+      }
+
+      // Notify child accounts in the family
+      const familyId = userDoc.exists() && userDoc.data().familyId;
+      if (familyId) {
+        const familyDoc = await getDoc(doc(db, 'families', familyId));
+        if (familyDoc.exists()) {
+          const members = familyDoc.data().members || [];
+          for (const memberId of members) {
+            if (memberId === user.uid || memberId === linkedParentId) continue;
+            const memberDoc = await getDoc(doc(db, 'users', memberId));
+            if (memberDoc.exists() && memberDoc.data().role === 'child') {
+              const dateFormatted = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+              await createNotification(
+                memberId,
+                '📅 Something changed!',
+                `${title} has been updated to ${dateFormatted}${time ? ' at ' + time : ''}. Check your schedule!`,
+                'event_changed_child',
+                { eventTitle: title, eventDate: date }
+              );
+            }
+          }
+        }
       }
 
       if (onEventUpdated) onEventUpdated();

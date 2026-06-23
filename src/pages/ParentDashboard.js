@@ -15,6 +15,7 @@ import BottomTabBar from '../components/BottomTabBar';
 import ExpenseTracker from '../components/ExpenseTracker';
 import MessageThread from '../components/MessageThread';
 import { createNotification } from '../services/NotificationService';
+import RoutineSetup from '../components/RoutineSetup';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -38,6 +39,8 @@ function ParentDashboard() {
   const [filterCategory, setFilterCategory] = useState('');
   const [filterDateRange] = useState({ start: '', end: '' });
   const [sortBy] = useState('date');
+
+  const [showRoutineSetup, setShowRoutineSetup] = useState(false);
 
   // Delete scope dialog state for recurring events
   const [showDeleteScopeDialog, setShowDeleteScopeDialog] = useState(false);
@@ -212,16 +215,42 @@ function ParentDashboard() {
 
       // Notify co-parent about the deletion
       const deletedEventTitle = (eventDataOverride || deleteEventData)?.title;
-      if (linkedParentId && deletedEventTitle && user) {
+      const deletedEventDate = (eventDataOverride || deleteEventData)?.date;
+      if (deletedEventTitle && user) {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         const userName = (userDoc.exists() && userDoc.data().name) || 'Your co-parent';
-        await createNotification(
-          linkedParentId,
-          'Event Removed',
-          `${userName} removed "${deletedEventTitle}"`,
-          'event_deleted',
-          { eventTitle: deletedEventTitle, deletedBy: user.uid }
-        );
+        if (linkedParentId) {
+          await createNotification(
+            linkedParentId,
+            'Event Removed',
+            `${userName} removed "${deletedEventTitle}"`,
+            'event_deleted',
+            { eventTitle: deletedEventTitle, deletedBy: user.uid }
+          );
+        }
+        // Notify child accounts in the family
+        if (familyId) {
+          const familyDoc = await getDoc(doc(db, 'families', familyId));
+          if (familyDoc.exists()) {
+            const members = familyDoc.data().members || [];
+            for (const memberId of members) {
+              if (memberId === user.uid || memberId === linkedParentId) continue;
+              const memberDoc = await getDoc(doc(db, 'users', memberId));
+              if (memberDoc.exists() && memberDoc.data().role === 'child') {
+                const dateFormatted = deletedEventDate
+                  ? new Date(deletedEventDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+                  : '';
+                await createNotification(
+                  memberId,
+                  '📅 Something changed!',
+                  `${deletedEventTitle}${dateFormatted ? ' on ' + dateFormatted : ''} has been cancelled. Your schedule has been updated.`,
+                  'event_deleted_child',
+                  { eventTitle: deletedEventTitle, eventDate: deletedEventDate }
+                );
+              }
+            }
+          }
+        }
       }
 
       alert('Event deleted successfully!');
@@ -585,6 +614,14 @@ function ParentDashboard() {
                 border: linkedParentId ? '2px solid #ff6b9d' : 'none',
                 borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
               }}>👥 {linkedParentId ? 'Co-Parent Linked ✓' : 'Link Co-Parent'}</button>
+              {familyId && (
+                <button onClick={() => setShowRoutineSetup(true)} style={{
+                  width: '100%', padding: '12px', marginTop: '8px',
+                  background: 'white', color: '#667eea',
+                  border: '2px solid #667eea',
+                  borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
+                }}>🏠 Manage Routines</button>
+              )}
             </div>
           </div>
         )}
@@ -643,6 +680,14 @@ function ParentDashboard() {
           }}
           onEventUpdated={loadEvents}
           linkedParentId={linkedParentId}
+        />
+      )}
+
+      {/* Routine Setup Modal */}
+      {showRoutineSetup && familyId && (
+        <RoutineSetup
+          familyId={familyId}
+          onClose={() => setShowRoutineSetup(false)}
         />
       )}
 

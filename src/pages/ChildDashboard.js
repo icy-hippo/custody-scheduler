@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
 import WhereAmI from '../components/WhereAmI';
 import PackList from '../components/PackList';
+import RoutineCards from '../components/RoutineCards';
 import FamilySetup from '../components/FamilySetup';
 import NotificationCenter from '../components/NotificationCenter';
 import VisualSchedule from '../components/VisualSchedule';
@@ -175,6 +176,47 @@ function ChildDashboard() {
     return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   };
 
+  const getTransitionInfo = () => {
+    if (!custodySchedule) return null;
+    const { pattern, startDate, parent1Name, parent2Name } = custodySchedule;
+    if (!pattern || !startDate) return null;
+
+    const start = new Date(startDate);
+    const today = new Date();
+    const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+
+    let currentParent;
+    let daysUntil;
+
+    if (pattern === 'alternating-weeks') {
+      const weekNumber = Math.floor(daysDiff / 7);
+      currentParent = weekNumber % 2 === 0 ? parent1Name : parent2Name;
+      const daysInCurrentWeek = daysDiff % 7;
+      daysUntil = 7 - daysInCurrentWeek;
+    } else if (pattern === '2-2-3') {
+      const cycle = daysDiff % 7;
+      if (cycle < 2) { currentParent = parent1Name; daysUntil = 2 - cycle; }
+      else if (cycle < 4) { currentParent = parent2Name; daysUntil = 4 - cycle; }
+      else { currentParent = parent1Name; daysUntil = 7 - cycle; }
+    } else if (pattern === 'weekday-weekend') {
+      const dayOfWeek = today.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      currentParent = isWeekend ? parent2Name : parent1Name;
+      if (isWeekend) {
+        daysUntil = dayOfWeek === 6 ? 1 : 5;
+      } else {
+        daysUntil = 6 - dayOfWeek;
+      }
+    } else {
+      return null;
+    }
+
+    const nextParent = currentParent === parent1Name ? parent2Name : parent1Name;
+    return { daysUntil, nextParent, currentParent, isToday: daysUntil === 0 };
+  };
+
+  const transitionInfo = getTransitionInfo();
+
   const todayEvents = getTodayEvents();
   const nextEvent = getNextEvent();
 
@@ -228,6 +270,46 @@ function ChildDashboard() {
         {/* TODAY TAB */}
         {activeTab === 'today' && (
           <>
+            {transitionInfo && (() => {
+              const { daysUntil, nextParent, currentParent } = transitionInfo;
+              let emoji, text, subText, bgColor, borderColor;
+              if (daysUntil === 0) {
+                emoji = '🏡'; text = `You're going to ${nextParent}'s today!`;
+                subText = 'Pack up and get ready!';
+                bgColor = '#e8f5e9'; borderColor = '#66bb6a';
+              } else if (daysUntil === 1) {
+                emoji = '🌙'; text = `Tomorrow you go to ${nextParent}'s`;
+                subText = 'Almost time to pack your bag!';
+                bgColor = '#e3f2fd'; borderColor = '#64b5f6';
+              } else if (daysUntil <= 3) {
+                emoji = '📅'; text = `${daysUntil} days until ${nextParent}'s`;
+                subText = 'Coming up soon!';
+                bgColor = '#f3e5f5'; borderColor = '#ba68c8';
+              } else {
+                emoji = '✨'; text = `${daysUntil} days at ${currentParent}'s`;
+                subText = 'Enjoy your time!';
+                bgColor = '#f5f5f5'; borderColor = '#bdbdbd';
+              }
+              return (
+                <div style={{
+                  background: bgColor,
+                  border: `2px solid ${borderColor}`,
+                  borderRadius: '20px',
+                  padding: '16px',
+                  marginBottom: '16px',
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px'
+                }}>
+                  <div style={{ fontSize: '40px', flexShrink: 0 }}>{emoji}</div>
+                  <div>
+                    <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>{text}</div>
+                    <div style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>{subText}</div>
+                  </div>
+                </div>
+              );
+            })()}
             <WhereAmI custodySchedule={custodySchedule} />
 
             {nextEvent && (
@@ -296,7 +378,10 @@ function ChildDashboard() {
 
         {/* PACK TAB */}
         {activeTab === 'pack' && (
-          <PackList events={events} custodySchedule={custodySchedule} />
+          <>
+            <PackList events={events} custodySchedule={custodySchedule} />
+            <RoutineCards familyId={familyId} userId={user.uid} />
+          </>
         )}
 
         {/* COMING UP TAB */}
