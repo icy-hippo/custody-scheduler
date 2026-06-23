@@ -45,28 +45,48 @@ function ChildDashboard() {
   // Load events
   const loadEvents = async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
-      
+
       // Get user's familyId
       const userDoc = await getDoc(doc(db, 'users', user.uid));
-      const userFamilyId = userDoc.exists() && userDoc.data().familyId;
-      
+      const userData = userDoc.exists() ? userDoc.data() : {};
+      const userFamilyId = userData.familyId;
+
+      // Collect all familyIds to try: the child's own + any parent's uid in the family
+      const familyIdsToTry = new Set();
+      if (userFamilyId) familyIdsToTry.add(userFamilyId);
+      familyIdsToTry.add(user.uid);
+
+      if (userFamilyId) {
+        const familyDoc = await getDoc(doc(db, 'families', userFamilyId));
+        if (familyDoc.exists()) {
+          (familyDoc.data().members || []).forEach(id => familyIdsToTry.add(id));
+        }
+      }
+
       const eventsRef = collection(db, 'events');
-      const q = query(
-        eventsRef,
-        where('familyId', '==', userFamilyId || user.uid),
-        orderBy('date', 'asc')
-      );
-      
-      const querySnapshot = await getDocs(q);
-      const eventsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      setEvents(eventsData);
+      const allEvents = [];
+      const seen = new Set();
+
+      for (const fid of familyIdsToTry) {
+        try {
+          const q = query(eventsRef, where('familyId', '==', fid), orderBy('date', 'asc'));
+          const snap = await getDocs(q);
+          snap.docs.forEach(d => {
+            if (!seen.has(d.id)) {
+              seen.add(d.id);
+              allEvents.push({ id: d.id, ...d.data() });
+            }
+          });
+        } catch (e) {
+          // index may not exist for this familyId, skip
+        }
+      }
+
+      allEvents.sort((a, b) => a.date.localeCompare(b.date));
+      setEvents(allEvents);
     } catch (err) {
       console.error('Error loading events:', err);
     } finally {
