@@ -59,12 +59,30 @@ function ChildDashboard() {
       if (userFamilyId) familyIdsToTry.add(userFamilyId);
       familyIdsToTry.add(user.uid);
 
+      // Also try linkedParentId directly
+      if (userData.linkedParentId) familyIdsToTry.add(userData.linkedParentId);
+
       if (userFamilyId) {
         const familyDoc = await getDoc(doc(db, 'families', userFamilyId));
         if (familyDoc.exists()) {
           (familyDoc.data().members || []).forEach(id => familyIdsToTry.add(id));
         }
       }
+
+      // Also search parentInvites for any invite involving this user
+      const inviteSnap = await getDocs(query(
+        collection(db, 'parentInvites'),
+        where('status', '==', 'accepted')
+      ));
+      inviteSnap.docs.forEach(d => {
+        const inv = d.data();
+        if (inv.invitedBy === user.uid || inv.acceptedBy === user.uid ||
+            inv.invitedEmail === userData.email) {
+          if (inv.invitedBy) familyIdsToTry.add(inv.invitedBy);
+          if (inv.acceptedBy) familyIdsToTry.add(inv.acceptedBy);
+          if (inv.familyId) familyIdsToTry.add(inv.familyId);
+        }
+      });
 
       const eventsRef = collection(db, 'events');
       const allEvents = [];
