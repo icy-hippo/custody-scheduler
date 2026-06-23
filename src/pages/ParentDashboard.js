@@ -489,7 +489,7 @@ function ParentDashboard() {
         {activeTab === 'calendar' && (
           <div>
             {custodySchedule ? (
-              <CustodyCalendar custodySchedule={custodySchedule} />
+              <CustodyCalendar custodySchedule={custodySchedule} events={events} />
             ) : (
               <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
                 <p style={{ fontSize: '40px', margin: '0 0 12px 0' }}>🏠</p>

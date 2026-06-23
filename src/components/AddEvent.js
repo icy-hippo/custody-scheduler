@@ -273,6 +273,74 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
             />
           </div>
 
+          {/* Date */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>
+              Date *
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                fontSize: '16px',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          {/* Time */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>
+              Time
+            </label>
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                fontSize: '16px',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          {/* Category */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>
+              Category *
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+              {categories.map(cat => (
+                <div
+                  key={cat.name}
+                  onClick={() => setCategory(cat.name)}
+                  style={{
+                    padding: '12px',
+                    border: category === cat.name ? `3px solid ${cat.color}` : '2px solid #ddd',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    background: category === cat.name ? `${cat.color}15` : 'white',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <div style={{ fontSize: '24px', marginBottom: '4px' }}>{cat.icon}</div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>{cat.name}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Recurrence Options */}
           <div style={{ marginBottom: '16px', padding: '12px', background: '#f8f9fa', borderRadius: '8px' }}>
             <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>
@@ -389,74 +457,6 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
                 )}
               </>
             )}
-          </div>
-
-          {/* Category */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>
-              Category *
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-              {categories.map(cat => (
-                <div
-                  key={cat.name}
-                  onClick={() => setCategory(cat.name)}
-                  style={{
-                    padding: '12px',
-                    border: category === cat.name ? `3px solid ${cat.color}` : '2px solid #ddd',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    background: category === cat.name ? `${cat.color}15` : 'white',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <div style={{ fontSize: '24px', marginBottom: '4px' }}>{cat.icon}</div>
-                  <div style={{ fontSize: '12px', color: '#666' }}>{cat.name}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Date */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>
-              Date *
-            </label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                fontSize: '16px',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          {/* Time */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>
-              Time
-            </label>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                fontSize: '16px',
-                boxSizing: 'border-box'
-              }}
-            />
           </div>
 
           {/* Location */}

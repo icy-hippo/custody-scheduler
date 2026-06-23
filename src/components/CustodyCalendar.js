@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-function CustodyCalendar({ custodySchedule }) {
+function CustodyCalendar({ custodySchedule, events = [] }) {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   if (!custodySchedule) {
@@ -120,6 +120,8 @@ function CustodyCalendar({ custodySchedule }) {
           const isToday = isCurrentMonth && day === today.getDate();
           const parent = getParentForDate(date);
           const color = parent === parent1Name ? parent1Color : parent2Color;
+          const dateStr = date.toISOString().split('T')[0];
+          const dayEvents = events.filter(e => e.date === dateStr);
 
           return (
             <div
@@ -130,10 +132,12 @@ function CustodyCalendar({ custodySchedule }) {
                 border: `2px solid ${color}`,
                 borderRadius: '8px',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxSizing: 'border-box',
-                position: 'relative'
+                position: 'relative',
+                gap: '2px'
               }}
             >
               <span style={{
@@ -143,6 +147,16 @@ function CustodyCalendar({ custodySchedule }) {
               }}>
                 {day}
               </span>
+              {dayEvents.length > 0 && (
+                <div style={{ display: 'flex', gap: '2px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {dayEvents.slice(0, 3).map((ev, i) => (
+                    <div key={i} title={ev.title} style={{
+                      width: '5px', height: '5px', borderRadius: '50%',
+                      background: isToday ? 'white' : ev.color || '#333'
+                    }} />
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}
