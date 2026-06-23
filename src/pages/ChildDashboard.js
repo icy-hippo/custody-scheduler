@@ -54,6 +54,8 @@ function ChildDashboard() {
       const userData = userDoc.exists() ? userDoc.data() : {};
       const userFamilyId = userData.familyId;
 
+      console.log('Child loadEvents - uid:', user.uid, 'familyId:', userFamilyId, 'userData:', userData);
+
       // Collect all familyIds to try: the child's own + any parent's uid in the family
       const familyIdsToTry = new Set();
       if (userFamilyId) familyIdsToTry.add(userFamilyId);
@@ -64,6 +66,7 @@ function ChildDashboard() {
 
       if (userFamilyId) {
         const familyDoc = await getDoc(doc(db, 'families', userFamilyId));
+        console.log('Family doc exists:', familyDoc.exists(), familyDoc.exists() ? familyDoc.data() : null);
         if (familyDoc.exists()) {
           (familyDoc.data().members || []).forEach(id => familyIdsToTry.add(id));
         }
@@ -104,6 +107,7 @@ function ChildDashboard() {
       }
 
       allEvents.sort((a, b) => a.date.localeCompare(b.date));
+      console.log('Child loadEvents - familyIdsToTry:', Array.from(familyIdsToTry), 'allEvents found:', allEvents.length, allEvents);
       setEvents(allEvents);
     } catch (err) {
       console.error('Error loading events:', err);
