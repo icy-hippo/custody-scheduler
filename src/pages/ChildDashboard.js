@@ -8,6 +8,27 @@ import PackList from '../components/PackList';
 import FamilySetup from '../components/FamilySetup';
 import NotificationCenter from '../components/NotificationCenter';
 import VisualSchedule from '../components/VisualSchedule';
+import NowNextLaterHome from '../components/NowNextLaterHome';
+import RoutineCards from '../components/RoutineCards';
+import ChangeExplanation from '../components/ChangeExplanation';
+import SocialStoryBuilder from '../components/SocialStoryBuilder';
+import VisualLabelGrid from '../components/VisualLabelGrid';
+import CustodyPatternPreview from '../components/CustodyPatternPreview';
+import {
+  formatFriendlyDate,
+  formatFriendlyTime,
+  getTodayEvents,
+  isEventUpcoming,
+} from '../utils/custodySchedule';
+import { DEFAULT_VISUAL_LABELS } from '../utils/spectrumSupport';
+
+const childTabs = [
+  { id: 'now', label: 'Now', icon: 'Home' },
+  { id: 'week', label: 'Week', icon: 'Week' },
+  { id: 'pack', label: 'Pack', icon: 'Bag' },
+  { id: 'story', label: 'Story', icon: 'Story' },
+  { id: 'routines', label: 'Routines', icon: 'List' },
+];
 
 function ChildDashboard() {
   const navigate = useNavigate();
@@ -18,8 +39,10 @@ function ChildDashboard() {
   const [custodySchedule, setCustodySchedule] = useState(null);
   const [showFamilySetup, setShowFamilySetup] = useState(false);
   const [familyId, setFamilyId] = useState(null);
+  const [calmMode, setCalmMode] = useState(false);
+  const [visualLabels, setVisualLabels] = useState(DEFAULT_VISUAL_LABELS);
+  const [activeTab, setActiveTab] = useState('now');
 
-  // Listen for auth state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -31,7 +54,6 @@ function ChildDashboard() {
     return () => unsubscribe();
   }, [navigate]);
 
-  // Update time every minute
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -39,30 +61,28 @@ function ChildDashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  // Load events
   const loadEvents = async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
-      
-      // Get user's familyId
+
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       const userFamilyId = userDoc.exists() && userDoc.data().familyId;
-      
+
       const eventsRef = collection(db, 'events');
       const q = query(
         eventsRef,
         where('familyId', '==', userFamilyId || user.uid),
         orderBy('date', 'asc')
       );
-      
+
       const querySnapshot = await getDocs(q);
       const eventsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      
+
       setEvents(eventsData);
     } catch (err) {
       console.error('Error loading events:', err);
@@ -75,14 +95,12 @@ function ChildDashboard() {
     if (!user) return;
 
     try {
-      // Try child's own doc first
       let custodyDoc = await getDoc(doc(db, 'custody', user.uid));
       if (custodyDoc.exists()) {
         setCustodySchedule(custodyDoc.data());
         return;
       }
 
-      // Fall back to a parent in the same family
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       const fid = userDoc.exists() && userDoc.data().familyId;
       if (!fid) return;
@@ -104,13 +122,30 @@ function ChildDashboard() {
     }
   };
 
+  const loadVisualLabels = async (fid) => {
+    if (!fid) return;
+
+    try {
+      const labelsRef = collection(db, 'visualLabels');
+      const labelsQuery = query(labelsRef, where('familyId', '==', fid));
+      const snapshot = await getDocs(labelsQuery);
+      const labels = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setVisualLabels(labels.length ? labels : DEFAULT_VISUAL_LABELS);
+    } catch (err) {
+      console.error('Error loading picture labels:', err);
+      setVisualLabels(DEFAULT_VISUAL_LABELS);
+    }
+  };
+
   const loadFamily = async () => {
     if (!user) return;
-    
+
     try {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists() && userDoc.data().familyId) {
-        setFamilyId(userDoc.data().familyId);
+        const fid = userDoc.data().familyId;
+        setFamilyId(fid);
+        await loadVisualLabels(fid);
       }
     } catch (err) {
       console.error('Error loading family:', err);
@@ -131,57 +166,19 @@ function ChildDashboard() {
     navigate('/');
   };
 
-  // Get today's events
-  const getTodayEvents = () => {
-    const today = new Date().toISOString().split('T')[0];
-    return events.filter(event => event.date === today);
-  };
-
-  // Get next upcoming event
-  const getNextEvent = () => {
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-    
-    const upcomingEvents = events.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate >= now || event.date === todayStr;
-    });
-    
-    return upcomingEvents[0] || null;
-  };
-
-  // Format time nicely
-  const formatTime = (timeStr) => {
-    if (!timeStr) return '';
-    const [hours, minutes] = timeStr.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
-
-  // Format date nicely
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    if (date.toDateString() === today.toDateString()) return 'Today';
-    if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
-    
-    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-  };
-
-  const todayEvents = getTodayEvents();
-  const nextEvent = getNextEvent();
+  const todayEvents = getTodayEvents(events, currentTime);
+  const upcomingEvents = events
+    .filter(event => isEventUpcoming(event, currentTime))
+    .slice(0, 6);
+  const background = calmMode ? '#eef1ea' : '#f6fbfb';
+  const activeTabInfo = childTabs.find(tab => tab.id === activeTab);
 
   if (!user) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center'
       }}>
         <p style={{ color: '#666' }}>Loading...</p>
@@ -189,41 +186,109 @@ function ChildDashboard() {
     );
   }
 
-  return (
-    <div style={{ 
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-      padding: '24px',
-      fontFamily: 'system-ui'
+  const renderTodaySchedule = () => (
+    <div style={{
+      background: 'white',
+      borderRadius: calmMode ? '12px' : '18px',
+      padding: calmMode ? '22px' : '28px',
+      boxShadow: calmMode ? 'none' : '0 8px 24px rgba(0,0,0,0.08)'
     }}>
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+      <h2 style={{ marginTop: 0, color: '#333', fontSize: '24px' }}>Today's Schedule</h2>
+      {loading ? (
+        <p style={{ color: '#666', textAlign: 'center', padding: '36px' }}>Loading...</p>
+      ) : todayEvents.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '36px', color: '#666' }}>
+          <p style={{ margin: 0, fontSize: '18px' }}>Nothing scheduled for today.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: '14px' }}>
+          {todayEvents.map(event => (
+            <div
+              key={event.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                padding: '18px',
+                background: `${event.color}15`,
+                border: `3px solid ${event.color}`,
+                borderRadius: '14px',
+                flexWrap: 'wrap'
+              }}
+            >
+              <div style={{ fontSize: calmMode ? '28px' : '40px', fontWeight: 'bold' }}>{event.icon}</div>
+              <div style={{ flex: 1, minWidth: '210px' }}>
+                <div style={{ fontWeight: 'bold', fontSize: '20px', color: '#333' }}>{event.title}</div>
+                <div style={{ color: '#666', fontSize: '16px', marginTop: '4px' }}>
+                  {event.time ? formatFriendlyTime(event.time) : 'All day'}
+                  {event.location && ` - ${event.location}`}
+                </div>
+              </div>
+              <div style={{
+                background: event.color,
+                color: 'white',
+                padding: '8px 14px',
+                borderRadius: '12px',
+                fontWeight: 'bold',
+                fontSize: '14px'
+              }}>
+                {event.category}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div style={{ minHeight: '100vh', background, fontFamily: 'system-ui', padding: '18px 18px 96px' }}>
+      <div style={{ maxWidth: '920px', margin: '0 auto' }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '24px'
+          marginBottom: '18px',
+          gap: '12px',
+          flexWrap: 'wrap'
         }}>
           <div>
-            <h1 style={{ margin: 0, color: '#333', fontSize: '32px' }}>My Schedule 📅</h1>
-            <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '16px' }}>
+            <h1 style={{ margin: 0, color: '#263238', fontSize: '30px' }}>
+              {activeTabInfo?.label || 'My Schedule'}
+            </h1>
+            <p style={{ margin: '4px 0 0 0', color: '#607d8b', fontSize: '15px' }}>
               {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {user && <NotificationCenter userId={user.uid} />}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <NotificationCenter userId={user.uid} />
+            <button
+              onClick={() => setCalmMode(!calmMode)}
+              style={{
+                padding: '10px 16px',
+                background: calmMode ? '#2a9d8f' : 'white',
+                color: calmMode ? 'white' : '#2a9d8f',
+                border: '2px solid #2a9d8f',
+                borderRadius: '18px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '13px'
+              }}
+            >
+              {calmMode ? 'Calm On' : 'Calm Mode'}
+            </button>
             {!familyId && (
               <button
                 onClick={() => setShowFamilySetup(true)}
                 style={{
-                  padding: '8px 16px',
+                  padding: '10px 14px',
                   background: '#34a853',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '20px',
+                  borderRadius: '18px',
                   cursor: 'pointer',
                   fontWeight: 'bold',
-                  fontSize: '12px'
+                  fontSize: '13px'
                 }}
               >
                 Join Family
@@ -232,14 +297,14 @@ function ChildDashboard() {
             <button
               onClick={handleLogout}
               style={{
-                padding: '10px 20px',
+                padding: '10px 16px',
                 background: 'white',
                 color: '#667eea',
                 border: '2px solid #667eea',
-                borderRadius: '20px',
+                borderRadius: '18px',
                 cursor: 'pointer',
                 fontWeight: 'bold',
-                fontSize: '14px'
+                fontSize: '13px'
               }}
             >
               Logout
@@ -247,174 +312,106 @@ function ChildDashboard() {
           </div>
         </div>
 
-        {/* Where Am I Today */}
-        <WhereAmI custodySchedule={custodySchedule} />
+        {activeTab === 'now' && (
+          <>
+            <NowNextLaterHome custodySchedule={custodySchedule} events={events} currentTime={currentTime} calmMode={calmMode} />
+            <WhereAmI custodySchedule={custodySchedule} calmMode={calmMode} />
+            {renderTodaySchedule()}
+          </>
+        )}
 
-        {/* 7-Day Visual Schedule */}
-        <VisualSchedule custodySchedule={custodySchedule} events={events} />
-
-        {/* Pack List */}
-        <PackList events={events} custodySchedule={custodySchedule} />
-
-        {/* What's Next Card */}
-        {nextEvent ? (
-          <div style={{
-            background: 'white',
-            borderRadius: '20px',
-            padding: '32px',
-            marginBottom: '24px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-            border: `4px solid ${nextEvent.color}`
-          }}>
-            <div style={{ 
-              fontSize: '14px', 
-              color: '#888', 
-              textTransform: 'uppercase',
-              fontWeight: 'bold',
-              marginBottom: '8px'
-            }}>
-              ⏰ What's Next
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{ fontSize: '64px' }}>{nextEvent.icon}</div>
-              <div style={{ flex: 1 }}>
-                <h2 style={{ margin: 0, fontSize: '28px', color: '#333' }}>{nextEvent.title}</h2>
-                <p style={{ margin: '8px 0', color: '#666', fontSize: '18px' }}>
-                  {formatDate(nextEvent.date)} {nextEvent.time && `at ${formatTime(nextEvent.time)}`}
-                </p>
-                {nextEvent.location && (
-                  <p style={{ margin: 0, color: '#888', fontSize: '16px' }}>
-                    📍 {nextEvent.location}
-                  </p>
-                )}
-              </div>
+        {activeTab === 'week' && (
+          <>
+            <VisualSchedule custodySchedule={custodySchedule} events={events} calmMode={calmMode} />
+            <CustodyPatternPreview custodySchedule={custodySchedule} calmMode={calmMode} />
+            {upcomingEvents.length > 0 && (
               <div style={{
-                background: nextEvent.color,
-                color: 'white',
-                padding: '12px 24px',
-                borderRadius: '20px',
-                fontWeight: 'bold',
-                fontSize: '18px'
+                background: 'white',
+                borderRadius: calmMode ? '12px' : '18px',
+                padding: calmMode ? '22px' : '28px',
+                boxShadow: calmMode ? 'none' : '0 8px 24px rgba(0,0,0,0.08)'
               }}>
-                {nextEvent.category}
+                <h2 style={{ marginTop: 0, color: '#333', fontSize: '24px' }}>Coming Up</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
+                  {upcomingEvents.map(event => (
+                    <div
+                      key={event.id}
+                      style={{
+                        padding: '16px',
+                        background: `${event.color}15`,
+                        border: `2px solid ${event.color}`,
+                        borderRadius: '12px',
+                        textAlign: 'center'
+                      }}
+                    >
+                      <div style={{ fontSize: calmMode ? '24px' : '30px', marginBottom: '8px', fontWeight: 'bold' }}>{event.icon}</div>
+                      <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#333' }}>{event.title}</div>
+                      <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>{formatFriendlyDate(event.date, currentTime)}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-        ) : (
-          <div style={{
-            background: 'white',
-            borderRadius: '20px',
-            padding: '40px',
-            marginBottom: '24px',
-            textAlign: 'center',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎉</div>
-            <h2 style={{ margin: 0, color: '#333' }}>No upcoming events!</h2>
-            <p style={{ color: '#666', marginTop: '8px' }}>Enjoy your free time!</p>
-          </div>
+            )}
+          </>
         )}
 
-        {/* Today's Schedule */}
-        <div style={{
-          background: 'white',
-          borderRadius: '20px',
-          padding: '32px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{ marginTop: 0, color: '#333', fontSize: '24px' }}>
-            📋 Today's Schedule
-          </h2>
-          
-          {loading ? (
-            <p style={{ color: '#666', textAlign: 'center', padding: '40px' }}>Loading...</p>
-          ) : todayEvents.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-              <p style={{ fontSize: '48px', margin: '0 0 16px 0' }}>😊</p>
-              <p style={{ margin: 0, fontSize: '18px' }}>Nothing scheduled for today!</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {todayEvents.map(event => (
-                <div 
-                  key={event.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '16px',
-                    padding: '20px',
-                    background: `${event.color}15`,
-                    border: `3px solid ${event.color}`,
-                    borderRadius: '16px'
-                  }}
-                >
-                  <div style={{ fontSize: '48px' }}>{event.icon}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '20px', color: '#333' }}>
-                      {event.title}
-                    </div>
-                    <div style={{ color: '#666', fontSize: '16px', marginTop: '4px' }}>
-                      {event.time ? formatTime(event.time) : 'All day'}
-                      {event.location && ` • ${event.location}`}
-                    </div>
-                  </div>
-                  <div style={{
-                    background: event.color,
-                    color: 'white',
-                    padding: '8px 16px',
-                    borderRadius: '12px',
-                    fontWeight: 'bold',
-                    fontSize: '14px'
-                  }}>
-                    {event.category}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* This Week Preview */}
-        {events.length > 0 && (
-          <div style={{
-            background: 'white',
-            borderRadius: '20px',
-            padding: '32px',
-            marginTop: '24px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
-          }}>
-            <h2 style={{ marginTop: 0, color: '#333', fontSize: '24px' }}>
-              📆 Coming Up
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-              {events.slice(0, 6).map(event => (
-                <div 
-                  key={event.id}
-                  style={{
-                    padding: '16px',
-                    background: `${event.color}15`,
-                    border: `2px solid ${event.color}`,
-                    borderRadius: '12px',
-                    textAlign: 'center'
-                  }}
-                >
-                  <div style={{ fontSize: '36px', marginBottom: '8px' }}>{event.icon}</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#333' }}>
-                    {event.title}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                    {formatDate(event.date)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {activeTab === 'pack' && (
+          <>
+            <PackList events={events} custodySchedule={custodySchedule} calmMode={calmMode} />
+            <VisualLabelGrid labels={visualLabels} calmMode={calmMode} />
+          </>
         )}
+
+        {activeTab === 'story' && (
+          <>
+            <ChangeExplanation events={events} currentTime={currentTime} calmMode={calmMode} />
+            <SocialStoryBuilder custodySchedule={custodySchedule} calmMode={calmMode} visualLabels={visualLabels} />
+          </>
+        )}
+
+        {activeTab === 'routines' && <RoutineCards calmMode={calmMode} />}
       </div>
 
-      {/* Family Setup Modal */}
+      <nav style={{
+        position: 'fixed',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'white',
+        borderTop: '1px solid #dbe3e6',
+        boxShadow: '0 -4px 18px rgba(0,0,0,0.08)',
+        padding: '8px 10px',
+        zIndex: 20
+      }}>
+        <div style={{ maxWidth: '920px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+          {childTabs.map(tab => {
+            const selected = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  minHeight: '58px',
+                  padding: '8px 4px',
+                  background: selected ? '#2a9d8f' : '#f5f7fa',
+                  color: selected ? 'white' : '#455a64',
+                  border: selected ? '2px solid #2a9d8f' : '2px solid #e3eaee',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '12px'
+                }}
+              >
+                <div style={{ fontSize: '13px', marginBottom: '3px' }}>{tab.icon}</div>
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
       {showFamilySetup && (
-        <FamilySetup 
+        <FamilySetup
           onClose={() => setShowFamilySetup(false)}
           onFamilyJoined={() => {
             loadFamily();

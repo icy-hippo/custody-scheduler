@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getParentForDate as getScheduleParent, parseLocalDate } from '../utils/custodySchedule';
 
 function CustodyCalendar({ custodySchedule }) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -23,29 +24,8 @@ function CustodyCalendar({ custodySchedule }) {
   const parent1Color = '#ff6b9d';
   const parent2Color = '#4facfe';
 
-  // Determine which parent has custody on a given date
-  const getParentForDate = (date) => {
-    const start = new Date(startDate);
-    const daysDiff = Math.floor((date - start) / (1000 * 60 * 60 * 24));
-
-    if (pattern === 'alternating-weeks') {
-      const weekNumber = Math.floor(daysDiff / 7);
-      return weekNumber % 2 === 0 ? parent1Name : parent2Name;
-    } else if (pattern === '2-2-3') {
-      const cycle = daysDiff % 7;
-      if (cycle < 2) return parent1Name;
-      if (cycle < 4) return parent2Name;
-      return parent1Name;
-    } else if (pattern === 'weekday-weekend') {
-      const dayOfWeek = date.getDay();
-      return (dayOfWeek === 0 || dayOfWeek === 6) ? parent2Name : parent1Name;
-    }
-
-    return parent1Name;
-  };
-
   const getColorForDate = (date) => {
-    const parent = getParentForDate(date);
+    const parent = getScheduleParent(custodySchedule, date);
     return parent === parent1Name ? parent1Color : parent2Color;
   };
 
@@ -248,7 +228,7 @@ function CustodyCalendar({ custodySchedule }) {
           const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
           const isToday = isCurrentMonth && day === today.getDate();
           const color = getColorForDate(date);
-          const parent = getParentForDate(date);
+          const parent = getScheduleParent(custodySchedule, date);
 
           return (
             <div
@@ -343,7 +323,7 @@ function CustodyCalendar({ custodySchedule }) {
               Start Date
             </div>
             <div style={{ color: '#333', fontWeight: 'bold', fontSize: '16px' }}>
-              {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              {parseLocalDate(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </div>
           </div>
         </div>
