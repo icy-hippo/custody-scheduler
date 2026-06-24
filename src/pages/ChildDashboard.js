@@ -195,7 +195,7 @@ function ChildDashboard() {
       }
     });
 
-    return [...nonRecurring, ...Object.values(recurringGroupMap)]
+    return [...nonRecurring, ...Object.values(recurringGroupMap).filter(e => e.date >= today)]
       .sort((a, b) => a.date.localeCompare(b.date));
   };
 
