@@ -14,6 +14,18 @@ import CalendarExport from '../components/CalendarExport';
 import { createNotification } from '../services/NotificationService';
 import ExpenseTracker from '../components/ExpenseTracker';
 import MessageThread from '../components/MessageThread';
+import HandoffNotes from '../components/HandoffNotes';
+import VisualLabelsManager from '../components/VisualLabelsManager';
+import CustodyPatternPreview from '../components/CustodyPatternPreview';
+
+const parentTabs = [
+  { id: 'schedule', label: 'Schedule' },
+  { id: 'handoff', label: 'Handoff' },
+  { id: 'supports', label: 'Child Supports' },
+  { id: 'messages', label: 'Messages' },
+  { id: 'expenses', label: 'Expenses' },
+  { id: 'settings', label: 'Settings' },
+];
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -30,6 +42,7 @@ function ParentDashboard() {
   const [familyId, setFamilyId] = useState(null);
   const [linkedParentId, setLinkedParentId] = useState(null);
   const [currentUserName, setCurrentUserName] = useState('');
+  const [activeTab, setActiveTab] = useState('schedule');
 
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -348,8 +361,46 @@ function ParentDashboard() {
 </div>
         </div>
 
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          flexWrap: 'wrap',
+          marginBottom: '24px',
+          background: 'white',
+          padding: '10px',
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+        }}>
+          {parentTabs.map(tab => {
+            const selected = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  padding: '12px 16px',
+                  background: selected ? '#455a64' : '#f5f7fa',
+                  color: selected ? 'white' : '#455a64',
+                  border: selected ? '2px solid #455a64' : '2px solid #e3eaee',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Action Buttons */}
-        <div style={{ marginBottom: '24px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <div style={{
+          marginBottom: '24px',
+          display: activeTab === 'schedule' || activeTab === 'settings' ? 'flex' : 'none',
+          gap: '12px',
+          flexWrap: 'wrap'
+        }}>
           <button
             onClick={() => setShowAddEvent(true)}
             style={{
@@ -434,14 +485,19 @@ function ParentDashboard() {
         </div>
 
         {/* Custody Calendar */}
-        {custodySchedule && (
+        {activeTab === 'schedule' && custodySchedule && (
           <div style={{ marginBottom: '24px' }}>
+            <CustodyPatternPreview custodySchedule={custodySchedule} />
             <CustodyCalendar custodySchedule={custodySchedule} />
           </div>
         )}
 
+        {activeTab === 'supports' && <VisualLabelsManager familyId={familyId} />}
+
+        {activeTab === 'handoff' && <HandoffNotes familyId={familyId} currentUserName={currentUserName} />}
+
         {/* Shared Expense Tracker */}
-        {familyId && (
+        {activeTab === 'expenses' && familyId && (
           <ExpenseTracker
             familyId={familyId}
             linkedParentId={linkedParentId}
@@ -450,14 +506,14 @@ function ParentDashboard() {
         )}
 
         {/* Co-Parent Messaging */}
-        <MessageThread
+        {activeTab === 'messages' && <MessageThread
           familyId={familyId}
           linkedParentId={linkedParentId}
           currentUserName={currentUserName}
-        />
+        />}
 
         {/* Search and Filter Bar */}
-        {events.length > 0 && (
+        {activeTab === 'schedule' && events.length > 0 && (
           <div style={{
             background: 'white',
             borderRadius: '12px',
@@ -642,6 +698,7 @@ function ParentDashboard() {
         )}
 
         {/* Events List */}
+        {activeTab === 'schedule' && (
         <div style={{
           background: 'white',
           borderRadius: '12px',
@@ -751,6 +808,7 @@ function ParentDashboard() {
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* Add Event Modal */}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
 import { collection, updateDoc, doc, getDoc, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { createNotification } from '../services/NotificationService';
+import { formatFriendlyDate } from '../utils/custodySchedule';
 
 function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
   const [title, setTitle] = useState('');
@@ -16,6 +17,8 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
   const [recurringEventGroupId, setRecurringEventGroupId] = useState(null);
   const [showEditScopeDialog, setShowEditScopeDialog] = useState(false);
   const [editScope, setEditScope] = useState('THIS_ONLY');
+  const [whatChanged, setWhatChanged] = useState('');
+  const [whatStaysSame, setWhatStaysSame] = useState('');
 
   const categories = [
     { name: 'School', color: '#667eea', icon: '📚' },
@@ -41,6 +44,8 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
           setCategory(data.category || '');
           setIsRecurring(data.isRecurring || false);
           setRecurringEventGroupId(data.recurringEventGroupId || null);
+          setWhatChanged(data.whatChanged || '');
+          setWhatStaysSame(data.whatStaysSame || '');
         }
       } catch (err) {
         setError('Failed to load event: ' + err.message);
@@ -75,6 +80,9 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
     setLoading(true);
     try {
       const selectedCategory = categories.find(c => c.name === category);
+      const user = auth.currentUser;
+      const userDoc = user ? await getDoc(doc(db, 'users', user.uid)) : null;
+      const userName = (userDoc?.exists() && userDoc.data().name) || 'A parent';
 
       const updatedData = {
         title,
@@ -85,6 +93,9 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
         category: selectedCategory.name,
         color: selectedCategory.color,
         icon: selectedCategory.icon,
+        whatChanged: whatChanged || `${title} changed to ${formatFriendlyDate(date)}${time ? ` at ${time}` : ''}.`,
+        whatStaysSame: whatStaysSame || 'The grown-ups know the plan.',
+        changedByName: userName,
         updatedAt: new Date()
       };
 
@@ -136,15 +147,12 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
 
       // Notify co-parent about the update
       if (linkedParentId) {
-        const user = auth.currentUser;
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        const userName = (userDoc.exists() && userDoc.data().name) || 'Your co-parent';
         await createNotification(
           linkedParentId,
           'Event Updated',
-          `${userName} updated "${title}" on ${new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+          `${userName} updated "${title}" on ${formatFriendlyDate(date)}`,
           'event_updated',
-          { eventTitle: title, eventDate: date, updatedBy: user.uid }
+          { eventTitle: title, eventDate: date, updatedBy: user?.uid }
         );
       }
 
@@ -485,7 +493,7 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
           </div>
 
           {/* Notes */}
-          <div style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>
               Notes
             </label>
@@ -494,6 +502,45 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any additional details..."
               rows="3"
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                fontSize: '16px',
+                boxSizing: 'border-box',
+                fontFamily: 'system-ui',
+                resize: 'vertical'
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '24px', padding: '14px', background: '#fffaf0', border: '1px solid #eadca6', borderRadius: '8px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#666', fontWeight: '500' }}>
+              Child-friendly change explanation
+            </label>
+            <textarea
+              value={whatChanged}
+              onChange={(e) => setWhatChanged(e.target.value)}
+              placeholder="What changed? e.g., Therapy moved to Thursday."
+              rows="2"
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                fontSize: '16px',
+                boxSizing: 'border-box',
+                fontFamily: 'system-ui',
+                resize: 'vertical',
+                marginBottom: '10px'
+              }}
+            />
+            <textarea
+              value={whatStaysSame}
+              onChange={(e) => setWhatStaysSame(e.target.value)}
+              placeholder="What stays the same? e.g., Pick-up person and bedtime routine stay the same."
+              rows="2"
               style={{
                 width: '100%',
                 padding: '12px',

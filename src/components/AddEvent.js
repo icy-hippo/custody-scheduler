@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { db, auth } from '../firebase';
 import { collection, doc, getDoc, writeBatch } from 'firebase/firestore';
 import { createNotification } from '../services/NotificationService';
+import { formatFriendlyDate, parseLocalDate } from '../utils/custodySchedule';
 
 function AddEvent({ onClose, onEventAdded, linkedParentId }) {
   const [title, setTitle] = useState('');
@@ -63,18 +64,17 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
     }
 
     const instances = [];
-    const startDate = new Date(baseEventData.date);
-    const endDate = new Date(recurrenceEndDate);
+    const startDate = parseLocalDate(baseEventData.date);
+    const endDate = parseLocalDate(recurrenceEndDate);
     const groupId = generateUUID();
 
     let currentDate = new Date(startDate);
-    let instanceIndex = 0;
 
-    while (currentDate <= endDate && instanceIndex < 200) { // Max 200 instances to prevent browser crash
+    while (currentDate <= endDate && instances.length < 200) {
       if (matchesRecurrencePattern(currentDate, startDate)) {
         instances.push({
           ...baseEventData,
-          date: currentDate.toISOString().split('T')[0],
+          date: `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`,
           isRecurring: true,
           recurrenceType,
           recurringEventGroupId: groupId,
@@ -101,25 +101,23 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
         break;
       case 'WEEKLY':
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const dayNames = daysOfWeek.sort().map(d => days[d]).join(', ');
+        const dayNames = [...daysOfWeek].sort().map(d => days[d]).join(', ');
         preview += `every ${dayNames}`;
         break;
       case 'BIWEEKLY':
         const days2 = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const dayNames2 = daysOfWeek.sort().map(d => days2[d]).join(', ');
+        const dayNames2 = [...daysOfWeek].sort().map(d => days2[d]).join(', ');
         preview += `every 2 weeks on ${dayNames2}`;
         break;
       case 'MONTHLY':
-        preview += 'on the ' + new Date(date).getDate() + 'th of each month';
+        preview += 'on day ' + (parseLocalDate(date)?.getDate() || '');
         break;
       default:
         return '';
     }
 
     if (recurrenceEndDate) {
-      const endDate = new Date(recurrenceEndDate);
-      const formattedEnd = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      preview += ` until ${formattedEnd}`;
+      preview += ` until ${formatFriendlyDate(recurrenceEndDate)}`;
     }
 
     return preview;
@@ -132,6 +130,18 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
 
     if (!category) {
       setError('Please select a category');
+      setLoading(false);
+      return;
+    }
+
+    if (isRecurring && !recurrenceEndDate) {
+      setError('Please add an end date for recurring events.');
+      setLoading(false);
+      return;
+    }
+
+    if (isRecurring && (recurrenceType === 'WEEKLY' || recurrenceType === 'BIWEEKLY') && daysOfWeek.length === 0) {
+      setError('Please choose at least one day of the week.');
       setLoading(false);
       return;
     }
@@ -187,7 +197,7 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
       if (linkedParentId) {
         const count = eventsToAdd.length;
         const notifMsg = count === 1
-          ? `${userName} added "${title}" on ${new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+          ? `${userName} added "${title}" on ${formatFriendlyDate(date)}`
           : `${userName} added "${title}" as a recurring event (${count} instances)`;
         await createNotification(
           linkedParentId,
