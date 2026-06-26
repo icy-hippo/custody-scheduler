@@ -241,6 +241,71 @@ function ChildDashboard() {
     </div>
   );
 
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'week':
+        return (
+          <>
+            <VisualSchedule custodySchedule={custodySchedule} events={events} calmMode={calmMode} />
+            <CustodyPatternPreview custodySchedule={custodySchedule} calmMode={calmMode} />
+            {upcomingEvents.length > 0 && (
+              <div style={{
+                background: 'white',
+                borderRadius: calmMode ? '12px' : '18px',
+                padding: calmMode ? '22px' : '28px',
+                boxShadow: calmMode ? 'none' : '0 8px 24px rgba(0,0,0,0.08)'
+              }}>
+                <h2 style={{ marginTop: 0, color: '#333', fontSize: '24px' }}>Coming Up</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
+                  {upcomingEvents.map(event => (
+                    <div
+                      key={event.id}
+                      style={{
+                        padding: '16px',
+                        background: `${event.color}15`,
+                        border: `2px solid ${event.color}`,
+                        borderRadius: '12px',
+                        textAlign: 'center'
+                      }}
+                    >
+                      <div style={{ fontSize: calmMode ? '24px' : '30px', marginBottom: '8px', fontWeight: 'bold' }}>{event.icon}</div>
+                      <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#333' }}>{event.title}</div>
+                      <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>{formatFriendlyDate(event.date, currentTime)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        );
+      case 'pack':
+        return (
+          <>
+            <PackList events={events} custodySchedule={custodySchedule} calmMode={calmMode} />
+            <VisualLabelGrid labels={visualLabels} calmMode={calmMode} />
+          </>
+        );
+      case 'story':
+        return (
+          <>
+            <ChangeExplanation events={events} currentTime={currentTime} calmMode={calmMode} />
+            <SocialStoryBuilder custodySchedule={custodySchedule} calmMode={calmMode} visualLabels={visualLabels} />
+          </>
+        );
+      case 'routines':
+        return <RoutineCards calmMode={calmMode} />;
+      case 'now':
+      default:
+        return (
+          <>
+            <NowNextLaterHome custodySchedule={custodySchedule} events={events} currentTime={currentTime} calmMode={calmMode} />
+            <WhereAmI custodySchedule={custodySchedule} calmMode={calmMode} />
+            {renderTodaySchedule()}
+          </>
+        );
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', background, fontFamily: 'system-ui', padding: '18px 18px 96px' }}>
       <div style={{ maxWidth: '920px', margin: '0 auto' }}>
@@ -312,64 +377,9 @@ function ChildDashboard() {
           </div>
         </div>
 
-        {activeTab === 'now' && (
-          <>
-            <NowNextLaterHome custodySchedule={custodySchedule} events={events} currentTime={currentTime} calmMode={calmMode} />
-            <WhereAmI custodySchedule={custodySchedule} calmMode={calmMode} />
-            {renderTodaySchedule()}
-          </>
-        )}
-
-        {activeTab === 'week' && (
-          <>
-            <VisualSchedule custodySchedule={custodySchedule} events={events} calmMode={calmMode} />
-            <CustodyPatternPreview custodySchedule={custodySchedule} calmMode={calmMode} />
-            {upcomingEvents.length > 0 && (
-              <div style={{
-                background: 'white',
-                borderRadius: calmMode ? '12px' : '18px',
-                padding: calmMode ? '22px' : '28px',
-                boxShadow: calmMode ? 'none' : '0 8px 24px rgba(0,0,0,0.08)'
-              }}>
-                <h2 style={{ marginTop: 0, color: '#333', fontSize: '24px' }}>Coming Up</h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
-                  {upcomingEvents.map(event => (
-                    <div
-                      key={event.id}
-                      style={{
-                        padding: '16px',
-                        background: `${event.color}15`,
-                        border: `2px solid ${event.color}`,
-                        borderRadius: '12px',
-                        textAlign: 'center'
-                      }}
-                    >
-                      <div style={{ fontSize: calmMode ? '24px' : '30px', marginBottom: '8px', fontWeight: 'bold' }}>{event.icon}</div>
-                      <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#333' }}>{event.title}</div>
-                      <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>{formatFriendlyDate(event.date, currentTime)}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {activeTab === 'pack' && (
-          <>
-            <PackList events={events} custodySchedule={custodySchedule} calmMode={calmMode} />
-            <VisualLabelGrid labels={visualLabels} calmMode={calmMode} />
-          </>
-        )}
-
-        {activeTab === 'story' && (
-          <>
-            <ChangeExplanation events={events} currentTime={currentTime} calmMode={calmMode} />
-            <SocialStoryBuilder custodySchedule={custodySchedule} calmMode={calmMode} visualLabels={visualLabels} />
-          </>
-        )}
-
-        {activeTab === 'routines' && <RoutineCards calmMode={calmMode} />}
+        <section aria-label={`${activeTabInfo?.label || 'Current'} tab`}>
+          {renderActiveTab()}
+        </section>
       </div>
 
       <nav style={{
@@ -388,6 +398,7 @@ function ChildDashboard() {
             const selected = activeTab === tab.id;
             return (
               <button
+                type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
