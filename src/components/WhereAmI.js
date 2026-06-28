@@ -4,7 +4,6 @@ function WhereAmI({ custodySchedule }) {
   const { pattern, startDate, parent1Name, parent2Name } = custodySchedule;
 
   const start = new Date(startDate);
-  start.setHours(0, 0, 0, 0);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));

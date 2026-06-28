@@ -26,7 +26,6 @@ function PackList({ events, custodySchedule, familyId, userId }) {
 
   const getCurrentParent = () => {
     const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
@@ -47,7 +46,6 @@ function PackList({ events, custodySchedule, familyId, userId }) {
 
   const getDaysUntilTransition = () => {
     const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));

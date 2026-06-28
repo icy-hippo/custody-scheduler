@@ -281,7 +281,6 @@ function ChildDashboard() {
     if (!pattern || !startDate) return null;
 
     const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
@@ -380,7 +379,6 @@ function ChildDashboard() {
                 blockLength = 7;
               } else if (custodySchedule?.pattern === '2-2-3') {
                 const start = new Date(custodySchedule.startDate);
-                start.setHours(0, 0, 0, 0);
                 const tod = new Date(); tod.setHours(0, 0, 0, 0);
                 const diff = Math.floor((tod - start) / 86400000);
                 const cycle = ((diff % 7) + 7) % 7;
