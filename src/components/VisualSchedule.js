@@ -53,139 +53,103 @@ function VisualSchedule({ custodySchedule, events }) {
   }
 
   return (
-    <div style={{
-      background: 'white',
-      borderRadius: '20px',
-      padding: '20px 0 16px 0',
-      marginBottom: '24px',
-      boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-      overflow: 'hidden'
-    }}>
-      <h2 style={{ marginTop: 0, color: '#333', fontSize: '22px', padding: '0 20px 12px 20px' }}>
-        🗓️ My Week Ahead
-      </h2>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+      <h2 style={{ margin: '0 0 4px 0', color: '#333', fontSize: '22px' }}>🗓️ My Week Ahead</h2>
 
-      <div style={{
-        display: 'flex',
-        gap: '8px',
-        overflowX: 'auto',
-        paddingLeft: '20px',
-        paddingRight: '20px',
-        paddingBottom: '8px',
-        WebkitOverflowScrolling: 'touch',
-        msOverflowStyle: 'none',
-        scrollbarWidth: 'none'
-      }}>
-        {days.map((day, idx) => (
-          <div
-            key={idx}
-            style={{
-              background: day.isToday ? day.parentColor : day.parentBg,
-              border: `2px solid ${day.parentColor}`,
-              borderRadius: '14px',
-              padding: '12px 8px',
-              textAlign: 'center',
-              color: day.isToday ? 'white' : '#333',
-              cursor: 'default',
-              minWidth: '80px',
-              flexShrink: 0
-            }}
-          >
-            <div style={{
-              fontSize: '11px',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-              opacity: day.isToday ? 0.9 : 0.7,
-              marginBottom: '4px'
-            }}>
-              {day.label}
-            </div>
-            <div style={{
-              fontSize: '13px',
-              fontWeight: '600',
-              marginBottom: '8px',
-              opacity: day.isToday ? 0.9 : 0.6
-            }}>
-              {day.dayNum}
-            </div>
-
-            {/* House icon showing which parent */}
-            {day.houseIcon && (
-              <div style={{ fontSize: '28px', marginBottom: '6px' }}>
-                {day.houseIcon}
+      {days.map((day, idx) => (
+        <div
+          key={idx}
+          style={{
+            background: day.isToday ? day.parentColor : 'white',
+            border: `2px solid ${day.parentColor}`,
+            borderRadius: '16px',
+            padding: '16px',
+            color: day.isToday ? 'white' : '#333',
+            boxShadow: day.isToday ? `0 4px 16px ${day.parentColor}55` : '0 2px 8px rgba(0,0,0,0.06)'
+          }}
+        >
+          {/* Row 1: day label + date + house */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: day.dayEvents.length > 0 ? '10px' : 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div>
+                <div style={{
+                  fontSize: '16px', fontWeight: 'bold',
+                  color: day.isToday ? 'white' : '#333'
+                }}>
+                  {day.label}
+                </div>
+                <div style={{
+                  fontSize: '13px',
+                  opacity: day.isToday ? 0.85 : 0.55,
+                  marginTop: '1px'
+                }}>
+                  {day.dayNum}
+                </div>
               </div>
-            )}
+            </div>
+
             {day.parent && (
-              <div style={{
-                fontSize: '11px',
-                fontWeight: 'bold',
-                marginBottom: '8px',
-                color: day.isToday ? 'white' : day.parentColor
-              }}>
-                {day.parent}
-              </div>
-            )}
-
-            {/* Event icons for this day */}
-            {day.dayEvents.length > 0 && (
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
-                gap: '2px',
-                marginTop: '4px'
-              }}>
-                {day.dayEvents.slice(0, 3).map((ev, ei) => (
-                  <div
-                    key={ei}
-                    title={ev.title}
-                    style={{
-                      fontSize: '16px',
-                      lineHeight: 1
-                    }}
-                  >
-                    {ev.icon}
-                  </div>
-                ))}
-                {day.dayEvents.length > 3 && (
-                  <div style={{
-                    fontSize: '10px',
-                    fontWeight: 'bold',
-                    color: day.isToday ? 'white' : day.parentColor
-                  }}>
-                    +{day.dayEvents.length - 3}
-                  </div>
-                )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '22px' }}>{day.houseIcon}</span>
+                <span style={{
+                  fontSize: '13px', fontWeight: 'bold',
+                  color: day.isToday ? 'white' : day.parentColor
+                }}>
+                  {day.parent}'s
+                </span>
               </div>
             )}
           </div>
-        ))}
-      </div>
+
+          {/* Row 2: events for this day */}
+          {day.dayEvents.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {day.dayEvents.slice(0, 3).map((ev, ei) => (
+                <div key={ei} style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  background: day.isToday ? 'rgba(255,255,255,0.2)' : `${ev.color}18`,
+                  border: day.isToday ? '1px solid rgba(255,255,255,0.3)' : `1px solid ${ev.color}55`,
+                  borderRadius: '10px', padding: '8px 10px'
+                }}>
+                  <span style={{ fontSize: '18px' }}>{ev.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: day.isToday ? 'white' : '#333' }}>
+                      {ev.title}
+                    </div>
+                    {ev.time && (
+                      <div style={{ fontSize: '11px', opacity: 0.75, marginTop: '1px', color: day.isToday ? 'white' : '#666' }}>
+                        {ev.time}{ev.location ? ` • ${ev.location}` : ''}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {day.dayEvents.length > 3 && (
+                <div style={{
+                  fontSize: '12px', fontWeight: 'bold', textAlign: 'center',
+                  color: day.isToday ? 'white' : day.parentColor, opacity: 0.8
+                }}>
+                  +{day.dayEvents.length - 3} more
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
 
       {/* Legend */}
-      {custodySchedule && <div style={{
-        display: 'flex',
-        gap: '24px',
-        marginTop: '12px',
-        justifyContent: 'center',
-        flexWrap: 'wrap',
-        padding: '0 20px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#666' }}>
-          <span style={{
-            width: '12px', height: '12px', borderRadius: '3px',
-            background: '#667eea', display: 'inline-block'
-          }} />
-          🏠 {parent1Name}
+      {custodySchedule && (
+        <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#666' }}>
+            <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#667eea', display: 'inline-block' }} />
+            🏠 {parent1Name}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#666' }}>
+            <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#f093fb', display: 'inline-block' }} />
+            🏡 {parent2Name}
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#666' }}>
-          <span style={{
-            width: '12px', height: '12px', borderRadius: '3px',
-            background: '#f093fb', display: 'inline-block'
-          }} />
-          🏡 {parent2Name}
-        </div>
-      </div>}
+      )}
     </div>
   );
 }
