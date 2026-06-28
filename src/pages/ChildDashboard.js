@@ -128,21 +128,56 @@ function ChildDashboard() {
         return;
       }
 
-      // Fall back to a parent in the same family
       const userDoc = await getDoc(doc(db, 'users', user.uid));
-      const fid = userDoc.exists() && userDoc.data().familyId;
+      const userData = userDoc.exists() ? userDoc.data() : {};
+      const fid = userData.familyId;
       if (!fid) return;
 
-      const familyDoc = await getDoc(doc(db, 'families', fid));
-      if (!familyDoc.exists()) return;
+      // Try familyId directly as a custody doc (parent's UID = familyId)
+      const fidCustody = await getDoc(doc(db, 'custody', fid));
+      if (fidCustody.exists()) {
+        setCustodySchedule(fidCustody.data());
+        return;
+      }
 
-      const members = familyDoc.data().members || [];
-      for (const memberId of members) {
-        if (memberId === user.uid) continue;
-        const memberCustody = await getDoc(doc(db, 'custody', memberId));
-        if (memberCustody.exists()) {
-          setCustodySchedule(memberCustody.data());
+      // Try linkedParentId directly
+      if (userData.linkedParentId) {
+        const linkedCustody = await getDoc(doc(db, 'custody', userData.linkedParentId));
+        if (linkedCustody.exists()) {
+          setCustodySchedule(linkedCustody.data());
           return;
+        }
+      }
+
+      // Fall back to searching family members
+      const familyDoc = await getDoc(doc(db, 'families', fid));
+      if (familyDoc.exists()) {
+        const members = familyDoc.data().members || [];
+        for (const memberId of members) {
+          if (memberId === user.uid) continue;
+          const memberCustody = await getDoc(doc(db, 'custody', memberId));
+          if (memberCustody.exists()) {
+            setCustodySchedule(memberCustody.data());
+            return;
+          }
+        }
+      }
+
+      // Last resort: search all parentInvites accepted involving this user's family
+      const inviteSnap = await getDocs(query(
+        collection(db, 'parentInvites'),
+        where('familyId', '==', fid),
+        where('status', '==', 'accepted')
+      ));
+      for (const d of inviteSnap.docs) {
+        const inv = d.data();
+        for (const uid of [inv.invitedBy, inv.acceptedBy]) {
+          if (!uid || uid === user.uid) continue;
+          const c = await getDoc(doc(db, 'custody', uid));
+          if (c.exists()) {
+            setCustodySchedule(c.data());
+            return;
+          }
         }
       }
     } catch (err) {
