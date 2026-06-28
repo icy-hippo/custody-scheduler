@@ -335,40 +335,107 @@ function ChildDashboard() {
           <>
             {transitionInfo && (() => {
               const { daysUntil, nextParent, currentParent } = transitionInfo;
-              let emoji, text, subText, bgColor, borderColor;
+
+              // Determine cycle length for progress bar (approximate based on pattern)
+              const cycleLength = custodySchedule?.pattern === 'alternating-weeks' ? 7
+                : custodySchedule?.pattern === '2-2-3' ? 7
+                : custodySchedule?.pattern === 'weekday-weekend' ? 5
+                : 7;
+              const daysIn = cycleLength - daysUntil;
+              const progress = Math.min(100, Math.max(0, (daysIn / cycleLength) * 100));
+
+              let emoji, headline, sub, accentColor, bgColor;
               if (daysUntil === 0) {
-                emoji = '🏡'; text = `You're going to ${nextParent}'s today!`;
-                subText = 'Pack up and get ready!';
-                bgColor = '#e8f5e9'; borderColor = '#66bb6a';
+                emoji = '🎒'; headline = `Moving to ${nextParent}'s today!`;
+                sub = 'Time to grab your bag and go!';
+                accentColor = '#43a047'; bgColor = '#e8f5e9';
               } else if (daysUntil === 1) {
-                emoji = '🌙'; text = `Tomorrow you go to ${nextParent}'s`;
-                subText = 'Almost time to pack your bag!';
-                bgColor = '#e3f2fd'; borderColor = '#64b5f6';
-              } else if (daysUntil <= 3) {
-                emoji = '📅'; text = `${daysUntil} days until ${nextParent}'s`;
-                subText = 'Coming up soon!';
-                bgColor = '#f3e5f5'; borderColor = '#ba68c8';
+                emoji = '🌙'; headline = `Tomorrow: ${nextParent}'s house`;
+                sub = "Don't forget to start packing tonight!";
+                accentColor = '#1e88e5'; bgColor = '#e3f2fd';
+              } else if (daysUntil === 2) {
+                emoji = '📅'; headline = `2 days until ${nextParent}'s`;
+                sub = 'A good time to start getting your bag ready.';
+                accentColor = '#8e24aa'; bgColor = '#f3e5f5';
+              } else if (daysUntil <= 5) {
+                emoji = '🏠'; headline = `Staying at ${currentParent}'s`;
+                sub = `${nextParent}'s in ${daysUntil} days`;
+                accentColor = '#667eea'; bgColor = '#f0f4ff';
               } else {
-                emoji = '✨'; text = `${daysUntil} days at ${currentParent}'s`;
-                subText = 'Enjoy your time!';
-                bgColor = '#f5f5f5'; borderColor = '#bdbdbd';
+                emoji = '😊'; headline = `You're at ${currentParent}'s`;
+                sub = `Next up: ${nextParent}'s in ${daysUntil} days`;
+                accentColor = '#888'; bgColor = '#f5f5f5';
               }
+
               return (
                 <div style={{
                   background: bgColor,
-                  border: `2px solid ${borderColor}`,
+                  border: `2px solid ${accentColor}`,
                   borderRadius: '20px',
-                  padding: '16px',
+                  padding: '20px',
                   marginBottom: '16px',
-                  boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '14px'
+                  boxShadow: `0 4px 16px ${accentColor}22`
                 }}>
-                  <div style={{ fontSize: '40px', flexShrink: 0 }}>{emoji}</div>
+                  {/* Top row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
+                    <div style={{
+                      fontSize: '44px',
+                      background: 'white',
+                      borderRadius: '14px',
+                      width: '60px', height: '60px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                    }}>{emoji}</div>
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '17px', color: '#333', lineHeight: 1.3 }}>{headline}</div>
+                      <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>{sub}</div>
+                    </div>
+                  </div>
+
+                  {/* Progress bar: days through this stay */}
                   <div>
-                    <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>{text}</div>
-                    <div style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>{subText}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#888', marginBottom: '5px' }}>
+                      <span>Day {Math.max(1, daysIn)} of stay</span>
+                      <span>{daysUntil === 0 ? 'Transition today!' : `${daysUntil} day${daysUntil === 1 ? '' : 's'} left`}</span>
+                    </div>
+                    <div style={{ background: 'rgba(0,0,0,0.08)', borderRadius: '8px', height: '10px', overflow: 'hidden' }}>
+                      <div style={{
+                        width: `${progress}%`,
+                        height: '100%',
+                        background: accentColor,
+                        borderRadius: '8px',
+                        transition: 'width 0.5s ease'
+                      }} />
+                    </div>
+                  </div>
+
+                  {/* Two-house display */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    marginTop: '14px', justifyContent: 'center'
+                  }}>
+                    <div style={{
+                      flex: 1, padding: '8px', background: 'white', borderRadius: '12px',
+                      textAlign: 'center', border: `2px solid ${daysUntil > 0 ? accentColor : '#ddd'}`,
+                      opacity: daysUntil > 0 ? 1 : 0.5
+                    }}>
+                      <div style={{ fontSize: '22px' }}>🏠</div>
+                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#555', marginTop: '2px' }}>{currentParent}</div>
+                      <div style={{ fontSize: '10px', color: '#888' }}>Now</div>
+                    </div>
+                    <div style={{ fontSize: '20px', color: '#ccc' }}>→</div>
+                    <div style={{
+                      flex: 1, padding: '8px', background: 'white', borderRadius: '12px',
+                      textAlign: 'center', border: `2px solid ${daysUntil === 0 ? accentColor : '#ddd'}`,
+                      opacity: daysUntil === 0 ? 1 : 0.5
+                    }}>
+                      <div style={{ fontSize: '22px' }}>🏡</div>
+                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#555', marginTop: '2px' }}>{nextParent}</div>
+                      <div style={{ fontSize: '10px', color: '#888' }}>
+                        {daysUntil === 0 ? 'Today!' : `In ${daysUntil}d`}
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
