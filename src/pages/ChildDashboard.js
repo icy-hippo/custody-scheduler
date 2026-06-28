@@ -493,6 +493,11 @@ function ChildDashboard() {
             }}>
               🚪 Logout
             </button>
+            <a href="/privacy-policy" style={{
+              display: 'block', padding: '14px', color: '#667eea',
+              textDecoration: 'none', fontSize: '14px', fontWeight: 'bold',
+              border: '2px solid #667eea', borderRadius: '14px', textAlign: 'center'
+            }}>🔒 Privacy Policy</a>
           </div>
         )}
       </div>

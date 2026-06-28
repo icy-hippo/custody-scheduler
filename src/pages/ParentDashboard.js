@@ -639,6 +639,15 @@ function ParentDashboard() {
                 }}>👧 Invite Child</button>
               )}
             </div>
+
+            <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Legal</h3>
+              <a href="/privacy-policy" style={{
+                display: 'block', padding: '12px', color: '#667eea',
+                textDecoration: 'none', fontSize: '14px', fontWeight: 'bold',
+                border: '2px solid #667eea', borderRadius: '10px', textAlign: 'center'
+              }}>🔒 Privacy Policy</a>
+            </div>
           </div>
         )}
 

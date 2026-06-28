@@ -5,6 +5,7 @@ import Signup from './pages/Signup';
 import ProfileSetup from './pages/ProfileSetup';
 import ParentDashboard from './pages/ParentDashboard';
 import ChildDashboard from './pages/ChildDashboard';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 function Home() {
   const { darkMode } = useDarkMode();
@@ -70,6 +71,11 @@ function Home() {
           </div>
         </div>
 
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <Link to="/privacy-policy" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', textDecoration: 'none' }}>
+            Privacy Policy
+          </Link>
+        </div>
         <div style={{ textAlign: 'center', display: 'flex', gap: '16px', justifyContent: 'center' }}>
           <Link to="/login" style={{ textDecoration: 'none' }}>
             <button style={{
@@ -118,6 +124,7 @@ function App() {
           <Route path="/profile-setup" element={<ProfileSetup />} />
           <Route path="/parent-dashboard" element={<ParentDashboard />} />
           <Route path="/child-dashboard" element={<ChildDashboard />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         </Routes>
       </Router>
     </DarkModeProvider>
