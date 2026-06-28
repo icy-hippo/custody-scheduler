@@ -28,11 +28,7 @@ function ProfileSetup() {
         createdAt: new Date()
       });
 
-      if (role === 'parent') {
-        navigate('/parent-dashboard');
-      } else {
-        navigate('/child-dashboard');
-      }
+      navigate('/onboarding', { state: { role } });
     } catch (err) {
       setError(err.message);
     }

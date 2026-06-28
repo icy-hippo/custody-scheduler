@@ -6,6 +6,7 @@ import ProfileSetup from './pages/ProfileSetup';
 import ParentDashboard from './pages/ParentDashboard';
 import ChildDashboard from './pages/ChildDashboard';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import Onboarding from './pages/Onboarding';
 
 function Home() {
   const { darkMode } = useDarkMode();
@@ -125,6 +126,7 @@ function App() {
           <Route path="/parent-dashboard" element={<ParentDashboard />} />
           <Route path="/child-dashboard" element={<ChildDashboard />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/onboarding" element={<Onboarding />} />
         </Routes>
       </Router>
     </DarkModeProvider>
