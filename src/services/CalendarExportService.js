@@ -2,6 +2,7 @@
  * Calendar Export Service
  * Generates iCal (.ics) format files for events and custody schedules
  */
+import { formatDateKey, getParentForDate, parseLocalDate } from '../utils/custodySchedule';
 
 // Generate a unique UID for each event
 const generateUID = () => {
@@ -10,7 +11,7 @@ const generateUID = () => {
 
 // Format date/time for iCal format (YYYYMMDDTHHMMSS)
 const formatDateTimeForIcal = (dateString, timeString) => {
-  const date = new Date(dateString);
+  const date = parseLocalDate(dateString);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -26,7 +27,7 @@ const formatDateTimeForIcal = (dateString, timeString) => {
 
 // Format date for iCal (YYYYMMDD) - all-day format
 const formatDateForIcal = (dateString) => {
-  const date = new Date(dateString);
+  const date = parseLocalDate(dateString);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -104,7 +105,7 @@ SUMMARY:${escapeIcalText(event.title)}`;
 export const generateCustodyIcal = (custodySchedule, monthsToGenerate = 12) => {
   if (!custodySchedule) return '';
 
-  const { pattern, startDate, parent1Name, parent2Name } = custodySchedule;
+  const { startDate } = custodySchedule;
   const now = new Date();
   const dtstamp = formatDateTimeForIcal(now.toISOString().split('T')[0], `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
 
@@ -119,29 +120,9 @@ DESCRIPTION:Custody Schedule
 `;
 
   // Generate events for custody schedule
-  const startDateObj = new Date(startDate);
+  const startDateObj = parseLocalDate(startDate);
   const endDateObj = new Date(startDateObj);
   endDateObj.setMonth(endDateObj.getMonth() + monthsToGenerate);
-
-  // Helper to determine parent for date
-  const getParentForDate = (date) => {
-    const start = new Date(startDate);
-    const daysDiff = Math.floor((date - start) / (1000 * 60 * 60 * 24));
-
-    if (pattern === 'alternating-weeks') {
-      const weekNumber = Math.floor(daysDiff / 7);
-      return weekNumber % 2 === 0 ? parent1Name : parent2Name;
-    } else if (pattern === '2-2-3') {
-      const cycle = daysDiff % 7;
-      if (cycle < 2) return parent1Name;
-      if (cycle < 4) return parent2Name;
-      return parent1Name;
-    } else if (pattern === 'weekday-weekend') {
-      const dayOfWeek = date.getDay();
-      return (dayOfWeek === 0 || dayOfWeek === 6) ? parent2Name : parent1Name;
-    }
-    return parent1Name;
-  };
 
   // Generate custody events (one per day)
   let currentDate = new Date(startDateObj);
@@ -149,18 +130,19 @@ DESCRIPTION:Custody Schedule
   let eventStartDate = null;
 
   while (currentDate < endDateObj) {
-    const currentParent = getParentForDate(currentDate);
+    const currentParent = getParentForDate(custodySchedule, currentDate);
 
     if (currentParent !== lastParent) {
       // Parent changed, create event for the previous period
       if (lastParent && eventStartDate) {
-        const eventDateStr = formatDateForIcal(eventStartDate.toISOString().split('T')[0]);
+        const eventDateStr = formatDateForIcal(formatDateKey(eventStartDate));
+        const eventEndDateStr = formatDateForIcal(formatDateKey(currentDate));
 
         ical += `BEGIN:VEVENT
 UID:${generateUID()}
 DTSTAMP:${dtstamp}
 DTSTART;VALUE=DATE:${eventDateStr}
-DTEND;VALUE=DATE:${formatDateForIcal(new Date(currentDate.getTime() - 86400000).toISOString().split('T')[0])}
+DTEND;VALUE=DATE:${eventEndDateStr}
 SUMMARY:${escapeIcalText(`📅 With ${lastParent}`)}
 DESCRIPTION:Custody with ${lastParent}
 TRANSP:TRANSPARENT
@@ -176,8 +158,8 @@ END:VEVENT\n`;
 
   // Add final event
   if (lastParent && eventStartDate) {
-    const eventDateStr = formatDateForIcal(eventStartDate.toISOString().split('T')[0]);
-    const lastDayStr = formatDateForIcal(new Date(currentDate.getTime() - 86400000).toISOString().split('T')[0]);
+    const eventDateStr = formatDateForIcal(formatDateKey(eventStartDate));
+    const lastDayStr = formatDateForIcal(formatDateKey(currentDate));
 
     ical += `BEGIN:VEVENT
 UID:${generateUID()}

@@ -86,8 +86,16 @@ export const subscribeToNotifications = (userId, callback) => {
         id: doc.id, 
         ...doc.data() 
       }));
-      // Sort by newest first
-      notifications.sort((a, b) => b.createdAt - a.createdAt);
+      // Sort by newest first, including Firestore Timestamp values.
+      notifications.sort((a, b) => {
+        const aTime = a.createdAt?.toMillis
+          ? a.createdAt.toMillis()
+          : new Date(a.createdAt || 0).getTime();
+        const bTime = b.createdAt?.toMillis
+          ? b.createdAt.toMillis()
+          : new Date(b.createdAt || 0).getTime();
+        return bTime - aTime;
+      });
       callback(notifications);
     });
     
