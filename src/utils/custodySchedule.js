@@ -64,10 +64,15 @@ export function getParentForDate(custodySchedule, value = new Date()) {
   }
 
   if (pattern === '2-2-3') {
-    const cycle = normalizedModulo(daysDiff, 7);
+    // 14-day repeating cycle so weekends alternate between parents
+    // P1: days 0-1, P2: days 2-3, P1: days 4-6, P2: days 7-8, P1: days 9-10, P2: days 11-13
+    const cycle = normalizedModulo(daysDiff, 14);
     if (cycle < 2) return firstParent;
     if (cycle < 4) return secondParent;
-    return firstParent;
+    if (cycle < 7) return firstParent;
+    if (cycle < 9) return secondParent;
+    if (cycle < 11) return firstParent;
+    return secondParent;
   }
 
   if (pattern === 'weekday-weekend') {

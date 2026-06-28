@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { getParentForDate } from '../utils/custodySchedule';
 
 let LocalNotifications = null;
 
@@ -76,37 +77,19 @@ export const scheduleAllNotifications = async ({ events = [], custodySchedule = 
 
   // --- Custody transition reminders ---
   if (custodySchedule) {
-    const { pattern, startDate, parent1Name, parent2Name } = custodySchedule;
-
-    const getParentForDate = (date) => {
-      const start = new Date(startDate);
-      const daysDiff = Math.floor((date - start) / (1000 * 60 * 60 * 24));
-      if (pattern === 'alternating-weeks') {
-        return Math.floor(daysDiff / 7) % 2 === 0 ? parent1Name : parent2Name;
-      } else if (pattern === '2-2-3') {
-        const cycle = ((daysDiff % 7) + 7) % 7;
-        if (cycle < 2) return parent1Name;
-        if (cycle < 4) return parent2Name;
-        return parent1Name;
-      } else if (pattern === 'weekday-weekend') {
-        return (date.getDay() === 0 || date.getDay() === 6) ? parent2Name : parent1Name;
-      }
-      return parent1Name;
-    };
-
-    const todayParent = getParentForDate(today);
+    const todayParent = getParentForDate(custodySchedule, today);
 
     // Check next 30 days for transitions
     for (let i = 1; i <= 30; i++) {
       const checkDate = new Date(today);
       checkDate.setDate(today.getDate() + i);
-      const checkParent = getParentForDate(checkDate);
+      const checkParent = getParentForDate(custodySchedule, checkDate);
 
       if (checkParent !== todayParent || i === 1) {
         // Find the actual transition day
         const prevDate = new Date(checkDate);
         prevDate.setDate(checkDate.getDate() - 1);
-        const prevParent = getParentForDate(prevDate);
+        const prevParent = getParentForDate(custodySchedule, prevDate);
 
         if (checkParent !== prevParent) {
           // Transition happens on checkDate

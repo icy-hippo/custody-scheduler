@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getParentForDate as getParentUtil } from '../utils/custodySchedule';
 
 function CustodyCalendar({ custodySchedule, events = [] }) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -24,24 +25,7 @@ function CustodyCalendar({ custodySchedule, events = [] }) {
   const parent1Color = '#ff6b9d';
   const parent2Color = '#4facfe';
 
-  const getParentForDate = (date) => {
-    const start = new Date(startDate);
-    const daysDiff = Math.floor((date - start) / (1000 * 60 * 60 * 24));
-
-    if (pattern === 'alternating-weeks') {
-      const weekNumber = Math.floor(daysDiff / 7);
-      return weekNumber % 2 === 0 ? parent1Name : parent2Name;
-    } else if (pattern === '2-2-3') {
-      const cycle = daysDiff % 7;
-      if (cycle < 2) return parent1Name;
-      if (cycle < 4) return parent2Name;
-      return parent1Name;
-    } else if (pattern === 'weekday-weekend') {
-      const dayOfWeek = date.getDay();
-      return (dayOfWeek === 0 || dayOfWeek === 6) ? parent2Name : parent1Name;
-    }
-    return parent1Name;
-  };
+  const getParentForDate = (date) => getParentUtil(custodySchedule, date);
 
   const getDaysInMonth = (date) =>
     new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();

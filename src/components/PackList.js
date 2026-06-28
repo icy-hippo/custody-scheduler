@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { getCustodyStatus } from '../utils/custodySchedule';
 
 function PackList({ events, custodySchedule, familyId, userId }) {
   const [checkedItems, setCheckedItems] = useState({});
@@ -22,56 +23,9 @@ function PackList({ events, custodySchedule, familyId, userId }) {
 
   if (!custodySchedule) return null;
 
-  const { pattern, startDate, parent1Name, parent2Name } = custodySchedule;
+  const { currentParent, nextParent, daysUntilTransition: daysUntil } = getCustodyStatus(custodySchedule);
 
-  const getCurrentParent = () => {
-    const start = new Date(startDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-
-    if (pattern === 'alternating-weeks') {
-      return Math.floor(daysDiff / 7) % 2 === 0 ? parent1Name : parent2Name;
-    } else if (pattern === '2-2-3') {
-      const cycle = ((daysDiff % 7) + 7) % 7;
-      if (cycle < 2) return parent1Name;
-      if (cycle < 4) return parent2Name;
-      return parent1Name;
-    } else if (pattern === 'weekday-weekend') {
-      const dayOfWeek = today.getDay();
-      return (dayOfWeek === 0 || dayOfWeek === 6) ? parent2Name : parent1Name;
-    }
-    return parent1Name;
-  };
-
-  const getDaysUntilTransition = () => {
-    const start = new Date(startDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-
-    if (pattern === 'alternating-weeks') {
-      return 7 - (daysDiff % 7);
-    } else if (pattern === '2-2-3') {
-      const cycle = ((daysDiff % 7) + 7) % 7;
-      if (cycle < 2) return 2 - cycle;
-      if (cycle < 4) return 4 - cycle;
-      return 7 - cycle;
-    } else if (pattern === 'weekday-weekend') {
-      const dayOfWeek = today.getDay();
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        return dayOfWeek === 6 ? 1 : 5;
-      }
-      return 6 - dayOfWeek;
-    }
-    return 7;
-  };
-
-  const currentParent = getCurrentParent();
-  const daysUntil = getDaysUntilTransition();
-  const nextParent = currentParent === parent1Name ? parent2Name : parent1Name;
-
-  if (daysUntil > 7) return null;
+  if (!currentParent || daysUntil === null || daysUntil > 7) return null;
 
   const saveCustomItems = async (items) => {
     if (!storageKey) return;

@@ -1,25 +1,9 @@
+import { getParentForDate as getParentUtil } from '../utils/custodySchedule';
+
 function VisualSchedule({ custodySchedule, events }) {
-  const { pattern, startDate, parent1Name, parent2Name } = custodySchedule || {};
+  const { parent1Name, parent2Name } = custodySchedule || {};
 
-  const getParentForDate = (date) => {
-    if (!custodySchedule) return null;
-    const start = new Date(startDate);
-    const daysDiff = Math.floor((date - start) / (1000 * 60 * 60 * 24));
-
-    if (pattern === 'alternating-weeks') {
-      const weekNumber = Math.floor(daysDiff / 7);
-      return weekNumber % 2 === 0 ? parent1Name : parent2Name;
-    } else if (pattern === '2-2-3') {
-      const cycle = ((daysDiff % 7) + 7) % 7;
-      if (cycle < 2) return parent1Name;
-      if (cycle < 4) return parent2Name;
-      return parent1Name;
-    } else if (pattern === 'weekday-weekend') {
-      const dayOfWeek = date.getDay();
-      return (dayOfWeek === 0 || dayOfWeek === 6) ? parent2Name : parent1Name;
-    }
-    return parent1Name;
-  };
+  const getParentForDate = (date) => getParentUtil(custodySchedule, date);
 
   const getEventsForDate = (dateStr) => {
     return (events || []).filter(e => e.date === dateStr);

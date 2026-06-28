@@ -12,6 +12,7 @@ import VisualSchedule from '../components/VisualSchedule';
 import CustodyCalendar from '../components/CustodyCalendar';
 import BottomTabBar from '../components/BottomTabBar';
 import { scheduleAllNotifications } from '../services/LocalNotificationService';
+import { getCustodyStatus } from '../utils/custodySchedule';
 import ChildMessages from '../components/ChildMessages';
 
 function ChildDashboard() {
@@ -276,47 +277,13 @@ function ChildDashboard() {
     return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   };
 
-  const getTransitionInfo = () => {
-    if (!custodySchedule) return null;
-    const { pattern, startDate, parent1Name, parent2Name } = custodySchedule;
-    if (!pattern || !startDate) return null;
-
-    const start = new Date(startDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-
-    let currentParent;
-    let daysUntil;
-
-    if (pattern === 'alternating-weeks') {
-      const weekNumber = Math.floor(daysDiff / 7);
-      currentParent = weekNumber % 2 === 0 ? parent1Name : parent2Name;
-      const daysInCurrentWeek = daysDiff % 7;
-      daysUntil = 7 - daysInCurrentWeek;
-    } else if (pattern === '2-2-3') {
-      const cycle = daysDiff % 7;
-      if (cycle < 2) { currentParent = parent1Name; daysUntil = 2 - cycle; }
-      else if (cycle < 4) { currentParent = parent2Name; daysUntil = 4 - cycle; }
-      else { currentParent = parent1Name; daysUntil = 7 - cycle; }
-    } else if (pattern === 'weekday-weekend') {
-      const dayOfWeek = today.getDay();
-      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-      currentParent = isWeekend ? parent2Name : parent1Name;
-      if (isWeekend) {
-        daysUntil = dayOfWeek === 6 ? 1 : 5;
-      } else {
-        daysUntil = 6 - dayOfWeek;
-      }
-    } else {
-      return null;
-    }
-
-    const nextParent = currentParent === parent1Name ? parent2Name : parent1Name;
-    return { daysUntil, nextParent, currentParent, isToday: daysUntil === 0 };
-  };
-
-  const transitionInfo = getTransitionInfo();
+  const custodyStatus = getCustodyStatus(custodySchedule);
+  const transitionInfo = custodyStatus.currentParent ? {
+    currentParent: custodyStatus.currentParent,
+    nextParent: custodyStatus.nextParent,
+    daysUntil: custodyStatus.daysUntilTransition,
+    isToday: custodyStatus.daysUntilTransition === 0,
+  } : null;
 
   const todayEvents = getTodayEvents();
   const nextEvent = getNextEvent();
@@ -376,21 +343,12 @@ function ChildDashboard() {
             {transitionInfo && (() => {
               const { daysUntil, nextParent, currentParent } = transitionInfo;
 
-              // Block length = length of current stay segment, not full cycle
-              let blockLength;
-              if (custodySchedule?.pattern === 'alternating-weeks') {
-                blockLength = 7;
-              } else if (custodySchedule?.pattern === '2-2-3') {
-                const start = new Date(custodySchedule.startDate);
-                const tod = new Date(); tod.setHours(0, 0, 0, 0);
-                const diff = Math.floor((tod - start) / 86400000);
-                const cycle = ((diff % 7) + 7) % 7;
-                blockLength = cycle < 2 ? 2 : cycle < 4 ? 2 : 3;
-              } else if (custodySchedule?.pattern === 'weekday-weekend') {
-                const dow = new Date().getDay();
-                blockLength = (dow === 0 || dow === 6) ? 2 : 5;
-              } else {
-                blockLength = 7;
+              // Find block length by looking back to when the current stay started
+              let blockLength = daysUntil;
+              for (let back = 1; back <= 14; back++) {
+                const checkDate = new Date(); checkDate.setHours(0,0,0,0); checkDate.setDate(checkDate.getDate() - back);
+                const { currentParent: cp } = getCustodyStatus(custodySchedule, checkDate);
+                if (cp !== currentParent) { blockLength = back + daysUntil; break; }
               }
               const daysIn = blockLength - daysUntil;
               const progress = Math.min(100, Math.max(0, (daysIn / blockLength) * 100));

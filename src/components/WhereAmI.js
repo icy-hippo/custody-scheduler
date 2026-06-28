@@ -1,25 +1,11 @@
+import { getParentForDate } from '../utils/custodySchedule';
+
 function WhereAmI({ custodySchedule }) {
   if (!custodySchedule) return null;
 
-  const { pattern, startDate, parent1Name, parent2Name } = custodySchedule;
-
-  const start = new Date(startDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-
-  let currentParent;
-  if (pattern === 'alternating-weeks') {
-    currentParent = Math.floor(daysDiff / 7) % 2 === 0 ? parent1Name : parent2Name;
-  } else if (pattern === '2-2-3') {
-    const cycle = ((daysDiff % 7) + 7) % 7;
-    currentParent = cycle < 2 ? parent1Name : cycle < 4 ? parent2Name : parent1Name;
-  } else if (pattern === 'weekday-weekend') {
-    const dow = today.getDay();
-    currentParent = (dow === 0 || dow === 6) ? parent2Name : parent1Name;
-  } else {
-    currentParent = parent1Name;
-  }
+  const { parent1Name, parent2Name } = custodySchedule;
+  const currentParent = getParentForDate(custodySchedule, new Date());
+  if (!currentParent) return null;
 
   const isParent1 = currentParent === parent1Name;
   const houseColor = isParent1 ? '#ff6b9d' : '#4facfe';
