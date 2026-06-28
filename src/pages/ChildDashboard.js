@@ -9,6 +9,7 @@ import RoutineCards from '../components/RoutineCards';
 import FamilySetup from '../components/FamilySetup';
 import NotificationCenter from '../components/NotificationCenter';
 import VisualSchedule from '../components/VisualSchedule';
+import CustodyCalendar from '../components/CustodyCalendar';
 import BottomTabBar from '../components/BottomTabBar';
 import { scheduleAllNotifications } from '../services/LocalNotificationService';
 
@@ -503,7 +504,10 @@ function ChildDashboard() {
 
         {/* WEEK TAB */}
         {activeTab === 'week' && (
-          <VisualSchedule custodySchedule={custodySchedule} events={events} />
+          <>
+            <VisualSchedule custodySchedule={custodySchedule} events={events} />
+            <CustodyCalendar custodySchedule={custodySchedule} events={events} />
+          </>
         )}
 
         {/* PACK TAB */}
