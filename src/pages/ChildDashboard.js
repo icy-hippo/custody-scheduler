@@ -374,13 +374,25 @@ function ChildDashboard() {
             {transitionInfo && (() => {
               const { daysUntil, nextParent, currentParent } = transitionInfo;
 
-              // Determine cycle length for progress bar (approximate based on pattern)
-              const cycleLength = custodySchedule?.pattern === 'alternating-weeks' ? 7
-                : custodySchedule?.pattern === '2-2-3' ? 7
-                : custodySchedule?.pattern === 'weekday-weekend' ? 5
-                : 7;
-              const daysIn = cycleLength - daysUntil;
-              const progress = Math.min(100, Math.max(0, (daysIn / cycleLength) * 100));
+              // Block length = length of current stay segment, not full cycle
+              let blockLength;
+              if (custodySchedule?.pattern === 'alternating-weeks') {
+                blockLength = 7;
+              } else if (custodySchedule?.pattern === '2-2-3') {
+                const start = new Date(custodySchedule.startDate);
+                start.setHours(0, 0, 0, 0);
+                const tod = new Date(); tod.setHours(0, 0, 0, 0);
+                const diff = Math.floor((tod - start) / 86400000);
+                const cycle = ((diff % 7) + 7) % 7;
+                blockLength = cycle < 2 ? 2 : cycle < 4 ? 2 : 3;
+              } else if (custodySchedule?.pattern === 'weekday-weekend') {
+                const dow = new Date().getDay();
+                blockLength = (dow === 0 || dow === 6) ? 2 : 5;
+              } else {
+                blockLength = 7;
+              }
+              const daysIn = blockLength - daysUntil;
+              const progress = Math.min(100, Math.max(0, (daysIn / blockLength) * 100));
 
               let emoji, headline, sub, accentColor, bgColor;
               if (daysUntil === 0) {
