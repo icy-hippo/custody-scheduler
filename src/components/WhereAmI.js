@@ -3,90 +3,48 @@ function WhereAmI({ custodySchedule }) {
 
   const { pattern, startDate, parent1Name, parent2Name } = custodySchedule;
 
-  const getCurrentParent = () => {
-    const start = new Date(startDate);
-    const today = new Date();
-    const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+  const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
 
-    if (pattern === 'alternating-weeks') {
-      const weekNumber = Math.floor(daysDiff / 7);
-      return weekNumber % 2 === 0 ? parent1Name : parent2Name;
-    } else if (pattern === '2-2-3') {
-      const cycle = daysDiff % 7;
-      if (cycle < 2) return parent1Name;
-      if (cycle < 4) return parent2Name;
-      return parent1Name;
-    } else if (pattern === 'weekday-weekend') {
-      const dayOfWeek = today.getDay();
-      return (dayOfWeek === 0 || dayOfWeek === 6) ? parent2Name : parent1Name;
-    }
+  let currentParent;
+  if (pattern === 'alternating-weeks') {
+    currentParent = Math.floor(daysDiff / 7) % 2 === 0 ? parent1Name : parent2Name;
+  } else if (pattern === '2-2-3') {
+    const cycle = ((daysDiff % 7) + 7) % 7;
+    currentParent = cycle < 2 ? parent1Name : cycle < 4 ? parent2Name : parent1Name;
+  } else if (pattern === 'weekday-weekend') {
+    const dow = today.getDay();
+    currentParent = (dow === 0 || dow === 6) ? parent2Name : parent1Name;
+  } else {
+    currentParent = parent1Name;
+  }
 
-    return parent1Name;
-  };
-
-  const getDaysUntilTransition = () => {
-    const start = new Date(startDate);
-    const today = new Date();
-    const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
-
-    if (pattern === 'alternating-weeks') {
-      const daysInCurrentWeek = daysDiff % 7;
-      return 7 - daysInCurrentWeek;
-    } else if (pattern === '2-2-3') {
-      const cycle = daysDiff % 7;
-      if (cycle < 2) return 2 - cycle;
-      if (cycle < 4) return 4 - cycle;
-      return 7 - cycle;
-    } else if (pattern === 'weekday-weekend') {
-      const dayOfWeek = today.getDay();
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        return dayOfWeek === 6 ? 1 : 5;
-      }
-      return 6 - dayOfWeek;
-    }
-
-    return 7;
-  };
-
-  const currentParent = getCurrentParent();
-  const daysUntil = getDaysUntilTransition();
-  const nextParent = currentParent === parent1Name ? parent2Name : parent1Name;
-
-  const houseColor = currentParent === parent1Name ? '#ff6b9d' : '#4facfe';
+  const isParent1 = currentParent === parent1Name;
+  const houseColor = isParent1 ? '#ff6b9d' : '#4facfe';
+  const houseEmoji = isParent1 ? '🏠' : '🏡';
 
   return (
     <div style={{
       background: 'white',
       borderRadius: '20px',
-      padding: '32px',
-      marginBottom: '24px',
-      boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-      border: `4px solid ${houseColor}`
+      padding: '20px 24px',
+      marginBottom: '16px',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+      border: `3px solid ${houseColor}`,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '16px'
     }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '80px', marginBottom: '16px' }}>🏠</div>
-        <h2 style={{ 
-          margin: '0 0 8px 0', 
-          color: '#333', 
-          fontSize: '28px',
-          fontWeight: 'bold'
-        }}>
-          You're at {currentParent}'s house today!
-        </h2>
-        <div style={{
-          background: `${houseColor}20`,
-          color: houseColor,
-          padding: '12px 24px',
-          borderRadius: '20px',
-          display: 'inline-block',
-          fontWeight: 'bold',
-          fontSize: '18px',
-          marginTop: '8px'
-        }}>
-          {daysUntil === 1 
-            ? `Moving to ${nextParent}'s tomorrow` 
-            : `${daysUntil} days until you go to ${nextParent}'s`
-          }
+      <div style={{ fontSize: '48px' }}>{houseEmoji}</div>
+      <div>
+        <div style={{ fontSize: '13px', color: '#999', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          You are here today
+        </div>
+        <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', marginTop: '2px' }}>
+          {currentParent}'s house
         </div>
       </div>
     </div>
