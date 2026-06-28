@@ -10,6 +10,7 @@ import FamilySetup from '../components/FamilySetup';
 import NotificationCenter from '../components/NotificationCenter';
 import VisualSchedule from '../components/VisualSchedule';
 import BottomTabBar from '../components/BottomTabBar';
+import { scheduleAllNotifications } from '../services/LocalNotificationService';
 
 function ChildDashboard() {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ function ChildDashboard() {
       const userData = userDoc.exists() ? userDoc.data() : {};
       const userFamilyId = userData.familyId;
 
-      console.log('Child loadEvents - uid:', user.uid, 'familyId:', userFamilyId, 'userData:', userData);
+
 
       // Collect all familyIds to try: the child's own + any parent's uid in the family
       const familyIdsToTry = new Set();
@@ -107,7 +108,6 @@ function ChildDashboard() {
       }
 
       allEvents.sort((a, b) => a.date.localeCompare(b.date));
-      console.log('Child loadEvents - familyIdsToTry:', Array.from(familyIdsToTry), 'allEvents found:', allEvents.length, allEvents);
       setEvents(allEvents);
     } catch (err) {
       console.error('Error loading events:', err);
@@ -170,6 +170,11 @@ function ChildDashboard() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Schedule local notifications whenever events or custody schedule change
+  useEffect(() => {
+    scheduleAllNotifications({ events, custodySchedule });
+  }, [events, custodySchedule]);
 
   const handleLogout = async () => {
     await signOut(auth);

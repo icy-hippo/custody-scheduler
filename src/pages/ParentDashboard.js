@@ -17,6 +17,7 @@ import MessageThread from '../components/MessageThread';
 import { createNotification } from '../services/NotificationService';
 import RoutineSetup from '../components/RoutineSetup';
 import ChildInvite from '../components/ChildInvite';
+import { scheduleAllNotifications } from '../services/LocalNotificationService';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -279,6 +280,11 @@ function ParentDashboard() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Schedule local notifications whenever events or custody schedule change
+  useEffect(() => {
+    scheduleAllNotifications({ events, custodySchedule });
+  }, [events, custodySchedule]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
