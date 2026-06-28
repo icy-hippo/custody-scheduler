@@ -474,15 +474,13 @@ function ChildDashboard() {
         {/* MORE TAB */}
         {activeTab === 'more' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {!familyId && (
-              <button onClick={() => setShowFamilySetup(true)} style={{
-                width: '100%', padding: '18px', background: 'white',
-                border: '2px solid #34a853', borderRadius: '16px',
-                color: '#34a853', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer'
-              }}>
-                🏠 Join Family
-              </button>
-            )}
+            <button onClick={() => setShowFamilySetup(true)} style={{
+              width: '100%', padding: '18px', background: 'white',
+              border: '2px solid #34a853', borderRadius: '16px',
+              color: '#34a853', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer'
+            }}>
+              🏠 {familyId ? 'Switch Family' : 'Join Family'}
+            </button>
             <button onClick={handleLogout} style={{
               width: '100%', padding: '18px', background: 'white',
               border: '2px solid #ff4444', borderRadius: '16px',

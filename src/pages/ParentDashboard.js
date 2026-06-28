@@ -16,6 +16,7 @@ import ExpenseTracker from '../components/ExpenseTracker';
 import MessageThread from '../components/MessageThread';
 import { createNotification } from '../services/NotificationService';
 import RoutineSetup from '../components/RoutineSetup';
+import ChildInvite from '../components/ChildInvite';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ function ParentDashboard() {
   const [sortBy] = useState('date');
 
   const [showRoutineSetup, setShowRoutineSetup] = useState(false);
+  const [showChildInvite, setShowChildInvite] = useState(false);
 
   // Delete scope dialog state for recurring events
   const [showDeleteScopeDialog, setShowDeleteScopeDialog] = useState(false);
@@ -622,6 +624,14 @@ function ParentDashboard() {
                   borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
                 }}>🏠 Manage Routines</button>
               )}
+              {familyId && (
+                <button onClick={() => setShowChildInvite(true)} style={{
+                  width: '100%', padding: '12px', marginTop: '8px',
+                  background: 'white', color: '#43a047',
+                  border: '2px solid #43a047',
+                  borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
+                }}>👧 Invite Child</button>
+              )}
             </div>
           </div>
         )}
@@ -681,6 +691,11 @@ function ParentDashboard() {
           onEventUpdated={loadEvents}
           linkedParentId={linkedParentId}
         />
+      )}
+
+      {/* Child Invite Modal */}
+      {showChildInvite && familyId && (
+        <ChildInvite familyId={familyId} onClose={() => setShowChildInvite(false)} />
       )}
 
       {/* Routine Setup Modal */}
