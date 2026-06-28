@@ -129,7 +129,7 @@ function PrivacyPolicy() {
             marginTop: '8px'
           }}>
             <p style={{ margin: 0, color: '#333', fontWeight: 'bold' }}>HarmonyHub</p>
-            <p style={{ margin: '4px 0 0 0', color: '#667eea' }}>harmonyhubapp@gmail.com</p>
+            <p style={{ margin: '4px 0 0 0', color: '#667eea' }}>rcbandi10@gmail.com</p>
           </div>
         </>)}
 
