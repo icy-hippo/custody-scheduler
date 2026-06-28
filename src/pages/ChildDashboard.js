@@ -281,7 +281,9 @@ function ChildDashboard() {
     if (!pattern || !startDate) return null;
 
     const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
 
     let currentParent;
@@ -548,7 +550,7 @@ function ChildDashboard() {
         {/* PACK TAB */}
         {activeTab === 'pack' && (
           <>
-            <PackList events={events} custodySchedule={custodySchedule} />
+            <PackList events={events} custodySchedule={custodySchedule} familyId={familyId} userId={user?.uid} />
             <RoutineCards familyId={familyId} userId={user.uid} />
           </>
         )}
@@ -590,7 +592,7 @@ function ChildDashboard() {
               border: '2px solid #34a853', borderRadius: '16px',
               color: '#34a853', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer'
             }}>
-              🏠 {familyId ? 'Switch Family' : 'Join Family'}
+              🏠 {familyId ? 'Change Family Code' : 'Join Family'}
             </button>
             <button onClick={handleLogout} style={{
               width: '100%', padding: '18px', background: 'white',
