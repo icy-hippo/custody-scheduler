@@ -18,6 +18,7 @@ import { createNotification } from '../services/NotificationService';
 import RoutineSetup from '../components/RoutineSetup';
 import ChildInvite from '../components/ChildInvite';
 import { scheduleAllNotifications } from '../services/LocalNotificationService';
+import ChildMessages from '../components/ChildMessages';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -569,12 +570,21 @@ function ParentDashboard() {
 
         {/* MESSAGES TAB */}
         {activeTab === 'messages' && (
-          <MessageThread
-            familyId={familyId}
-            linkedParentId={linkedParentId}
-            currentUserName={currentUserName}
-            fullPage
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <MessageThread
+              familyId={familyId}
+              linkedParentId={linkedParentId}
+              currentUserName={currentUserName}
+              fullPage
+            />
+            {familyId && (
+              <ChildMessages
+                familyId={familyId}
+                userId={user?.uid}
+                userName={currentUserName}
+              />
+            )}
+          </div>
         )}
 
         {/* EXPENSES TAB */}

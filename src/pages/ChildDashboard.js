@@ -12,6 +12,7 @@ import VisualSchedule from '../components/VisualSchedule';
 import CustodyCalendar from '../components/CustodyCalendar';
 import BottomTabBar from '../components/BottomTabBar';
 import { scheduleAllNotifications } from '../services/LocalNotificationService';
+import ChildMessages from '../components/ChildMessages';
 
 function ChildDashboard() {
   const navigate = useNavigate();
@@ -320,11 +321,13 @@ function ChildDashboard() {
   const todayEvents = getTodayEvents();
   const nextEvent = getNextEvent();
 
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
   const tabs = [
     { id: 'today', icon: '🏠', label: 'Today', badge: todayEvents.length },
     { id: 'week', icon: '🗓️', label: 'Week' },
     { id: 'pack', icon: '🎒', label: 'Pack' },
-    { id: 'upcoming', icon: '📆', label: 'Coming Up' },
+    { id: 'messages', icon: '💬', label: 'Messages', badge: unreadMessages },
     { id: 'more', icon: '⚙️', label: 'More' },
   ];
 
@@ -563,6 +566,16 @@ function ChildDashboard() {
             <PackList events={events} custodySchedule={custodySchedule} familyId={familyId} userId={user?.uid} />
             <RoutineCards familyId={familyId} userId={user.uid} />
           </>
+        )}
+
+        {/* MESSAGES TAB */}
+        {activeTab === 'messages' && (
+          <ChildMessages
+            familyId={familyId}
+            userId={user?.uid}
+            userName={user?.displayName || 'Me'}
+            onUnreadChange={setUnreadMessages}
+          />
         )}
 
         {/* COMING UP TAB */}
