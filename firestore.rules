@@ -22,10 +22,16 @@ service cloud.firestore {
       return signedIn() && familyId != null && myFamilyId() == familyId;
     }
 
+    function familyIdUnchanged() {
+      return !('familyId' in resource.data)
+        || resource.data.familyId == null
+        || request.resource.data.familyId == resource.data.familyId;
+    }
+
     match /users/{userId} {
       allow read: if isSelf(userId) || sameFamily(resource.data.familyId);
       allow create: if isSelf(userId);
-      allow update: if isSelf(userId);
+      allow update: if isSelf(userId) && familyIdUnchanged();
       allow delete: if false;
     }
 
