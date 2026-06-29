@@ -1,6 +1,6 @@
 import { getParentForDate as getParentUtil } from '../utils/custodySchedule';
 
-function VisualSchedule({ custodySchedule, events }) {
+function VisualSchedule({ custodySchedule, events, onEventClick }) {
   const { parent1Name, parent2Name } = custodySchedule || {};
 
   const getParentForDate = (date) => getParentUtil(custodySchedule, date);
@@ -89,12 +89,17 @@ function VisualSchedule({ custodySchedule, events }) {
           {day.dayEvents.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {day.dayEvents.slice(0, 3).map((ev, ei) => (
-                <div key={ei} style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  background: day.isToday ? 'rgba(255,255,255,0.2)' : `${ev.color}18`,
-                  border: day.isToday ? '1px solid rgba(255,255,255,0.3)' : `1px solid ${ev.color}55`,
-                  borderRadius: '10px', padding: '8px 10px'
-                }}>
+                <div
+                  key={ei}
+                  onClick={() => onEventClick && onEventClick(ev)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    background: day.isToday ? 'rgba(255,255,255,0.2)' : `${ev.color}18`,
+                    border: day.isToday ? '1px solid rgba(255,255,255,0.3)' : `1px solid ${ev.color}55`,
+                    borderRadius: '10px', padding: '8px 10px',
+                    cursor: onEventClick ? 'pointer' : 'default'
+                  }}
+                >
                   <span style={{ fontSize: '18px' }}>{ev.icon}</span>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '13px', fontWeight: 'bold', color: day.isToday ? 'white' : '#333' }}>

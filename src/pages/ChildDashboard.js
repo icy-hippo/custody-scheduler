@@ -14,6 +14,7 @@ import BottomTabBar from '../components/BottomTabBar';
 import { scheduleAllNotifications } from '../services/LocalNotificationService';
 import { getCustodyStatus } from '../utils/custodySchedule';
 import ChildMessages from '../components/ChildMessages';
+import EventDetail from '../components/EventDetail';
 
 function ChildDashboard() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ function ChildDashboard() {
   const [showFamilySetup, setShowFamilySetup] = useState(false);
   const [familyId, setFamilyId] = useState(null);
   const [activeTab, setActiveTab] = useState('today');
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   // Listen for auth state
   useEffect(() => {
@@ -513,7 +515,7 @@ function ChildDashboard() {
         {/* WEEK TAB */}
         {activeTab === 'week' && (
           <>
-            <VisualSchedule custodySchedule={custodySchedule} events={events} />
+            <VisualSchedule custodySchedule={custodySchedule} events={events} onEventClick={setSelectedEvent} />
             <CustodyCalendar custodySchedule={custodySchedule} events={events} />
           </>
         )}
@@ -548,16 +550,22 @@ function ChildDashboard() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {getDeduplicatedEvents().map(event => (
-                  <div key={event.id} style={{
-                    display: 'flex', alignItems: 'center', gap: '12px',
-                    padding: '14px', background: `${event.color}15`,
-                    border: `2px solid ${event.color}`, borderRadius: '12px'
-                  }}>
+                  <div
+                    key={event.id}
+                    onClick={() => setSelectedEvent(event)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      padding: '14px', background: `${event.color}15`,
+                      border: `2px solid ${event.color}`, borderRadius: '12px',
+                      cursor: 'pointer'
+                    }}
+                  >
                     <div style={{ fontSize: '32px' }}>{event.icon}</div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 'bold', fontSize: '15px', color: '#333' }}>{event.title}</div>
                       <div style={{ color: '#666', fontSize: '12px', marginTop: '2px' }}>{formatDate(event.date)}</div>
                     </div>
+                    <span style={{ fontSize: '18px', color: '#ccc' }}>›</span>
                   </div>
                 ))}
               </div>
@@ -592,6 +600,14 @@ function ChildDashboard() {
       </div>
 
       <BottomTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* Event Detail Sheet */}
+      {selectedEvent && (
+        <EventDetail
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
 
       {/* Family Setup Modal */}
       {showFamilySetup && (

@@ -19,6 +19,7 @@ import RoutineSetup from '../components/RoutineSetup';
 import ChildInvite from '../components/ChildInvite';
 import { scheduleAllNotifications } from '../services/LocalNotificationService';
 import ChildMessages from '../components/ChildMessages';
+import EventDetail from '../components/EventDetail';
 
 function ParentDashboard() {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ function ParentDashboard() {
 
   const [showRoutineSetup, setShowRoutineSetup] = useState(false);
   const [showChildInvite, setShowChildInvite] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   // Delete scope dialog state for recurring events
   const [showDeleteScopeDialog, setShowDeleteScopeDialog] = useState(false);
@@ -496,11 +498,15 @@ function ParentDashboard() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {filteredEvents.map(event => (
-                    <div key={event.id} style={{
-                      padding: '12px', border: `2px solid ${event.color}`,
-                      borderLeft: `6px solid ${event.color}`, borderRadius: '8px',
-                      background: `${event.color}10`
-                    }}>
+                    <div
+                      key={event.id}
+                      onClick={() => setSelectedEvent(event)}
+                      style={{
+                        padding: '12px', border: `2px solid ${event.color}`,
+                        borderLeft: `6px solid ${event.color}`, borderRadius: '8px',
+                        background: `${event.color}10`, cursor: 'pointer'
+                      }}
+                    >
                       <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '8px' }}>
                         <div style={{ fontSize: '26px', flexShrink: 0 }}>{event.icon}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -523,12 +529,12 @@ function ParentDashboard() {
                             borderRadius: '10px', fontSize: '10px', fontWeight: 'bold'
                           }}>🔄 Recurring</span>
                         )}
-                        <button onClick={() => openEditEvent(event.id)} style={{
+                        <button onClick={e => { e.stopPropagation(); openEditEvent(event.id); }} style={{
                           background: '#4facfe', color: 'white', border: 'none',
                           borderRadius: '8px', padding: '5px 14px', cursor: 'pointer',
                           fontWeight: 'bold', fontSize: '13px'
                         }}>Edit</button>
-                        <button onClick={() => deleteEvent(event.id)} style={{
+                        <button onClick={e => { e.stopPropagation(); deleteEvent(event.id); }} style={{
                           background: '#ff4444', color: 'white', border: 'none',
                           borderRadius: '8px', padding: '5px 14px', cursor: 'pointer',
                           fontWeight: 'bold', fontSize: '13px'
@@ -715,6 +721,16 @@ function ParentDashboard() {
           }}
           onEventUpdated={loadEvents}
           linkedParentId={linkedParentId}
+        />
+      )}
+
+      {/* Event Detail Sheet */}
+      {selectedEvent && (
+        <EventDetail
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+          onEdit={(id) => { setSelectedEvent(null); openEditEvent(id); }}
+          onDelete={(id) => { setSelectedEvent(null); deleteEvent(id); }}
         />
       )}
 
