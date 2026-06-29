@@ -78,6 +78,25 @@ service cloud.firestore {
         && request.resource.data.senderId == request.auth.uid;
     }
 
+    match /routines/{routineId} {
+      allow read, update, delete: if sameFamily(resource.data.familyId);
+      allow create: if sameFamily(request.resource.data.familyId)
+        && request.resource.data.createdBy == request.auth.uid;
+    }
+
+    match /familyMessages/{msgId} {
+      allow read: if sameFamily(resource.data.familyId);
+      allow create: if sameFamily(request.resource.data.familyId)
+        && request.resource.data.senderId == request.auth.uid;
+      allow update: if sameFamily(resource.data.familyId);
+      allow delete: if false;
+    }
+
+    match /packLists/{listId} {
+      allow read, write: if signedIn()
+        && (listId == request.auth.uid || sameFamily(listId));
+    }
+
     match /handoffNotes/{noteId} {
       allow read, update, delete: if sameFamily(resource.data.familyId);
       allow create: if sameFamily(request.resource.data.familyId)
