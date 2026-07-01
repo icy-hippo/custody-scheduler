@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, doc, getDoc, Timestamp } from 'firebase/firestore';
 import WhereAmI from '../components/WhereAmI';
 import PackList from '../components/PackList';
 import RoutineCards from '../components/RoutineCards';
@@ -99,7 +99,8 @@ function ChildDashboard() {
 
       for (const fid of familyIdsToTry) {
         try {
-          const q = query(eventsRef, where('familyId', '==', fid), orderBy('date', 'asc'));
+          const todayStr = new Date().toISOString().split('T')[0];
+          const q = query(eventsRef, where('familyId', '==', fid), where('date', '>=', todayStr), orderBy('date', 'asc'));
           const snap = await getDocs(q);
           snap.docs.forEach(d => {
             if (!seen.has(d.id)) {

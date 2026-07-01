@@ -81,10 +81,12 @@ function ParentDashboard() {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       const userFamilyId = userDoc.exists() && userDoc.data().familyId;
       
+      const todayStr = new Date().toISOString().split('T')[0];
       const eventsRef = collection(db, 'events');
       const q = query(
-        eventsRef, 
+        eventsRef,
         where('familyId', '==', userFamilyId || user.uid),
+        where('date', '>=', todayStr),
         orderBy('date', 'asc')
       );
       
