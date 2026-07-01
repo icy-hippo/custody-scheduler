@@ -16,6 +16,13 @@ import { getCustodyStatus } from '../utils/custodySchedule';
 import ChildMessages from '../components/ChildMessages';
 import EventDetail from '../components/EventDetail';
 
+const localDateStr = (d = new Date()) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
 function ChildDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -99,7 +106,7 @@ function ChildDashboard() {
 
       for (const fid of familyIdsToTry) {
         try {
-          const todayStr = new Date().toISOString().split('T')[0];
+          const todayStr = localDateStr();
           const q = query(eventsRef, where('familyId', '==', fid), where('date', '>=', todayStr), orderBy('date', 'asc'));
           const snap = await getDocs(q);
           snap.docs.forEach(d => {
@@ -224,7 +231,7 @@ function ChildDashboard() {
 
   // Deduplicate recurring events — only keep next upcoming instance per group
   const getDeduplicatedEvents = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateStr();
     const recurringGroupMap = {};
     const nonRecurring = [];
 
@@ -247,14 +254,14 @@ function ChildDashboard() {
 
   // Get today's events
   const getTodayEvents = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateStr();
     return getDeduplicatedEvents().filter(event => event.date === today);
   };
 
   // Get next upcoming event
   const getNextEvent = () => {
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
+    const todayStr = localDateStr(now);
     const currentTime = now.toTimeString().slice(0, 5); // "HH:MM"
     return getDeduplicatedEvents().find(event => {
       if (event.date > todayStr) return true;

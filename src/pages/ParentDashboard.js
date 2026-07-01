@@ -21,6 +21,13 @@ import { scheduleAllNotifications } from '../services/LocalNotificationService';
 import ChildMessages from '../components/ChildMessages';
 import EventDetail from '../components/EventDetail';
 
+const localDateStr = (d = new Date()) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
 function ParentDashboard() {
   const navigate = useNavigate();
   const [showAddEvent, setShowAddEvent] = useState(false);
@@ -81,7 +88,7 @@ function ParentDashboard() {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       const userFamilyId = userDoc.exists() && userDoc.data().familyId;
       
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = localDateStr();
       const eventsRef = collection(db, 'events');
       const q = query(
         eventsRef,
@@ -298,7 +305,7 @@ function ParentDashboard() {
 
   // Get filtered and sorted events
   const getFilteredAndSortedEvents = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateStr();
 
     // For recurring events, only keep the next upcoming instance per group
     const recurringGroupMap = {};
