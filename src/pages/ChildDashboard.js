@@ -253,8 +253,17 @@ function ChildDashboard() {
 
   // Get next upcoming event
   const getNextEvent = () => {
-    const upcoming = getDeduplicatedEvents();
-    return upcoming[0] || null;
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().slice(0, 5); // "HH:MM"
+    return getDeduplicatedEvents().find(event => {
+      if (event.date > todayStr) return true;
+      if (event.date === todayStr) {
+        // today's event: only show if it hasn't started yet (or has no time)
+        return !event.time || event.time > currentTime;
+      }
+      return false;
+    }) || null;
   };
 
   // Format time nicely
