@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
 const ICON_OPTIONS = ['🛁', '🦷', '📚', '💊', '🧸', '🎮', '🍎', '😴'];
@@ -26,6 +26,7 @@ function RoutineSetup({ familyId, onClose }) {
         title: title.trim(),
         description: description.trim(),
         timeOfDay,
+        createdBy: auth.currentUser?.uid || '',
         createdAt: new Date()
       });
       onClose();
