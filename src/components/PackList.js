@@ -35,11 +35,13 @@ function PackList({ events, custodySchedule, familyId, userId }) {
   };
 
   const getUpcomingEventsAtNextHouse = () => {
-    const today = new Date();
-    const threeDaysFromNow = new Date();
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const threeDaysFromNow = new Date(today);
     threeDaysFromNow.setDate(today.getDate() + 3);
     return events.filter(event => {
-      const eventDate = new Date(event.date);
+      if (!event.date) return false;
+      const [y, m, d] = event.date.split('-').map(Number);
+      const eventDate = new Date(y, m - 1, d);
       return eventDate >= today && eventDate <= threeDaysFromNow;
     });
   };
