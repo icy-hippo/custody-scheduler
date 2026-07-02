@@ -6,6 +6,7 @@ import { getCustodyStatus } from '../utils/custodySchedule';
 function PackList({ events, custodySchedule, familyId, userId }) {
   const [checkedItems, setCheckedItems] = useState({});
   const [customItems, setCustomItems] = useState([]);
+  const [hiddenItems, setHiddenItems] = useState([]);
   const [newItemText, setNewItemText] = useState('');
   const [adding, setAdding] = useState(false);
 
@@ -15,7 +16,10 @@ function PackList({ events, custodySchedule, familyId, userId }) {
     const load = async () => {
       try {
         const snap = await getDoc(doc(db, 'packLists', storageKey));
-        if (snap.exists()) setCustomItems(snap.data().items || []);
+        if (snap.exists()) {
+          setCustomItems(snap.data().items || []);
+          setHiddenItems(snap.data().hiddenItems || []);
+        }
       } catch (e) {}
     };
     load();
@@ -27,10 +31,10 @@ function PackList({ events, custodySchedule, familyId, userId }) {
 
   if (!currentParent || daysUntil === null || daysUntil > 7) return null;
 
-  const saveCustomItems = async (items) => {
+  const saveToFirestore = async (items, hidden) => {
     if (!storageKey) return;
     try {
-      await setDoc(doc(db, 'packLists', storageKey), { items });
+      await setDoc(doc(db, 'packLists', storageKey), { items, hiddenItems: hidden });
     } catch (e) {}
   };
 
@@ -69,7 +73,7 @@ function PackList({ events, custodySchedule, familyId, userId }) {
     return items;
   };
 
-  const defaultItems = generatePackList();
+  const defaultItems = generatePackList().filter(i => !hiddenItems.includes(i.id));
   const allItems = [...defaultItems, ...customItems];
 
   const toggleItem = (itemId) => {
@@ -82,7 +86,7 @@ function PackList({ events, custodySchedule, familyId, userId }) {
     const newItem = { id: `custom-${Date.now()}`, name: text, icon: '📦', custom: true };
     const updated = [...customItems, newItem];
     setCustomItems(updated);
-    await saveCustomItems(updated);
+    await saveToFirestore(updated, hiddenItems);
     setNewItemText('');
     setAdding(false);
   };
@@ -90,7 +94,14 @@ function PackList({ events, custodySchedule, familyId, userId }) {
   const removeItem = async (itemId) => {
     const updated = customItems.filter(i => i.id !== itemId);
     setCustomItems(updated);
-    await saveCustomItems(updated);
+    await saveToFirestore(updated, hiddenItems);
+    setCheckedItems(prev => { const next = { ...prev }; delete next[itemId]; return next; });
+  };
+
+  const hideDefaultItem = async (itemId) => {
+    const updated = [...hiddenItems, itemId];
+    setHiddenItems(updated);
+    await saveToFirestore(customItems, updated);
     setCheckedItems(prev => { const next = { ...prev }; delete next[itemId]; return next; });
   };
 
@@ -106,12 +117,21 @@ function PackList({ events, custodySchedule, familyId, userId }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
         <div style={{ fontSize: '36px' }}>🎒</div>
-        <div>
+        <div style={{ flex: 1 }}>
           <h2 style={{ margin: 0, fontSize: '22px', color: '#333' }}>Pack Your Bag!</h2>
           <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
             {daysUntil === 1 ? `Going to ${nextParent}'s tomorrow` : `Going to ${nextParent}'s in ${daysUntil} days`}
           </p>
         </div>
+        {hiddenItems.length > 0 && (
+          <button
+            onClick={async () => { setHiddenItems([]); await saveToFirestore(customItems, []); }}
+            style={{
+              background: 'none', border: 'none', color: '#ffa500',
+              fontSize: '12px', cursor: 'pointer', textDecoration: 'underline', flexShrink: 0
+            }}
+          >Reset</button>
+        )}
       </div>
 
       {/* Progress bar */}
@@ -156,16 +176,14 @@ function PackList({ events, custodySchedule, familyId, userId }) {
                 fontWeight: item.eventBased ? 'bold' : 'normal'
               }}>{item.name}</span>
             </div>
-            {item.custom && (
-              <button
-                onClick={() => removeItem(item.id)}
-                style={{
-                  background: 'none', border: '2px solid #ff4444', borderRadius: '8px',
-                  color: '#ff4444', width: '32px', height: '32px', cursor: 'pointer',
-                  fontSize: '16px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}
-              >×</button>
-            )}
+            <button
+              onClick={() => item.custom ? removeItem(item.id) : hideDefaultItem(item.id)}
+              style={{
+                background: 'none', border: '2px solid #ff4444', borderRadius: '8px',
+                color: '#ff4444', width: '32px', height: '32px', cursor: 'pointer',
+                fontSize: '16px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}
+            >×</button>
           </div>
         ))}
       </div>
