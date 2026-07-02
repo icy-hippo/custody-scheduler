@@ -471,14 +471,17 @@ function ChildDashboard() {
             <WhereAmI custodySchedule={custodySchedule} />
 
             {nextEvent && (
-              <div style={{
-                background: 'white',
-                borderRadius: '20px',
-                padding: '20px',
-                marginBottom: '16px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-                border: `3px solid ${nextEvent.color}`
-              }}>
+              <div
+                onClick={() => setSelectedEvent(nextEvent)}
+                style={{
+                  background: 'white',
+                  borderRadius: '20px',
+                  padding: '20px',
+                  marginBottom: '16px',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                  border: `3px solid ${nextEvent.color}`,
+                  cursor: 'pointer'
+                }}>
                 <div style={{ fontSize: '12px', color: '#888', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>
                   ⏰ What's Next
                 </div>
@@ -493,6 +496,7 @@ function ChildDashboard() {
                       <div style={{ color: '#888', fontSize: '13px', marginTop: '2px' }}>📍 {nextEvent.location}</div>
                     )}
                   </div>
+                  <span style={{ fontSize: '18px', color: '#ccc' }}>›</span>
                 </div>
               </div>
             )}
@@ -509,11 +513,15 @@ function ChildDashboard() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {todayEvents.map(event => (
-                    <div key={event.id} style={{
-                      display: 'flex', alignItems: 'center', gap: '12px',
-                      padding: '16px', background: `${event.color}15`,
-                      border: `2px solid ${event.color}`, borderRadius: '14px'
-                    }}>
+                    <div
+                      key={event.id}
+                      onClick={() => setSelectedEvent(event)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '12px',
+                        padding: '16px', background: `${event.color}15`,
+                        border: `2px solid ${event.color}`, borderRadius: '14px',
+                        cursor: 'pointer'
+                      }}>
                       <div style={{ fontSize: '36px' }}>{event.icon}</div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#333' }}>{event.title}</div>
@@ -521,6 +529,7 @@ function ChildDashboard() {
                           {event.time ? formatTime(event.time) : 'All day'}{event.location && ` • ${event.location}`}
                         </div>
                       </div>
+                      <span style={{ fontSize: '18px', color: '#ccc' }}>›</span>
                     </div>
                   ))}
                 </div>
