@@ -10,6 +10,9 @@ const config: CapacitorConfig = {
       iconColor: '#667EEA',
       sound: 'beep.wav'
     }
+  },
+  android: {
+    allowMixedContent: true
   }
 };
 
