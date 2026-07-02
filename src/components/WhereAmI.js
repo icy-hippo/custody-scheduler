@@ -3,7 +3,7 @@ import { getParentForDate } from '../utils/custodySchedule';
 function WhereAmI({ custodySchedule }) {
   if (!custodySchedule) return null;
 
-  const { parent1Name, parent2Name } = custodySchedule;
+  const { parent1Name } = custodySchedule;
   const currentParent = getParentForDate(custodySchedule, new Date());
   if (!currentParent) return null;
 
