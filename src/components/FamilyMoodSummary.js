@@ -17,30 +17,47 @@ function FamilyMoodSummary({ familyId }) {
     if (!familyId) return;
 
     const load = async () => {
-      const todayKey = (() => {
-        const d = new Date();
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      })();
+      const d = new Date();
+      const todayKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
       try {
-        // Get family members
-        const familyDoc = await getDoc(doc(db, 'families', familyId));
-        if (!familyDoc.exists()) return;
-        const members = familyDoc.data().members || [];
+        // Query today's moods for this family directly
+        const moodsSnap = await getDocs(
+          query(collection(db, 'moods'), where('familyId', '==', familyId), where('date', '==', todayKey))
+        );
 
-        // Get child members and their today mood
+        if (moodsSnap.empty) {
+          // Fall back: check members array for children
+          const familyDoc = await getDoc(doc(db, 'families', familyId));
+          if (!familyDoc.exists()) return;
+          const members = familyDoc.data().members || [];
+          const results = [];
+          for (const uid of members) {
+            const userDoc = await getDoc(doc(db, 'users', uid));
+            if (!userDoc.exists()) continue;
+            const userData = userDoc.data();
+            if (userData.role !== 'child') continue;
+            results.push({
+              uid,
+              name: userData.displayName || userData.name || 'Child',
+              mood: null,
+            });
+          }
+          setChildMoods(results);
+          return;
+        }
+
+        // Resolve names for each mood entry
         const results = [];
-        for (const uid of members) {
-          const userDoc = await getDoc(doc(db, 'users', uid));
-          if (!userDoc.exists()) continue;
-          const userData = userDoc.data();
-          if (userData.role !== 'child') continue;
-
-          const moodSnap = await getDoc(doc(db, 'moods', `${uid}_${todayKey}`));
+        for (const moodDoc of moodsSnap.docs) {
+          const data = moodDoc.data();
+          const userDoc = await getDoc(doc(db, 'users', data.userId));
+          const userData = userDoc.exists() ? userDoc.data() : {};
+          if (userData.role === 'parent') continue; // skip parent moods
           results.push({
-            uid,
+            uid: data.userId,
             name: userData.displayName || userData.name || 'Child',
-            mood: moodSnap.exists() ? moodSnap.data().mood : null,
+            mood: data.mood,
           });
         }
         setChildMoods(results);
