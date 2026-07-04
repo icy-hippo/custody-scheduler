@@ -21,6 +21,7 @@ import FamilyMoodSummary from '../components/FamilyMoodSummary';
 import ChildInvite from '../components/ChildInvite';
 import { scheduleAllNotifications } from '../services/LocalNotificationService';
 import ChildMessages from '../components/ChildMessages';
+import HandoffNotes from '../components/HandoffNotes';
 import EventDetail from '../components/EventDetail';
 
 const localDateStr = (d = new Date()) => {
@@ -601,6 +602,12 @@ function ParentDashboard() {
                 familyId={familyId}
                 userId={user?.uid}
                 userName={currentUserName}
+              />
+            )}
+            {familyId && (
+              <HandoffNotes
+                familyId={familyId}
+                currentUserName={currentUserName}
               />
             )}
           </div>
