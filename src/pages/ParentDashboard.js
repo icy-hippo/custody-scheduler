@@ -17,6 +17,7 @@ import MessageThread from '../components/MessageThread';
 import { createNotification } from '../services/NotificationService';
 import RoutineSetup from '../components/RoutineSetup';
 import RoutineCards from '../components/RoutineCards';
+import FamilyMoodSummary from '../components/FamilyMoodSummary';
 import ChildInvite from '../components/ChildInvite';
 import { scheduleAllNotifications } from '../services/LocalNotificationService';
 import ChildMessages from '../components/ChildMessages';
@@ -433,6 +434,7 @@ function ParentDashboard() {
         {/* EVENTS TAB */}
         {activeTab === 'events' && (
           <div>
+            <FamilyMoodSummary familyId={familyId} />
             <button
               onClick={() => setShowAddEvent(true)}
               style={{
