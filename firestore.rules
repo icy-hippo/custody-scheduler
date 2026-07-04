@@ -90,6 +90,16 @@ service cloud.firestore {
         && request.resource.data.createdBy == request.auth.uid;
     }
 
+    match /moods/{moodId} {
+      allow read: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        sameFamily(resource.data.familyId)
+      );
+      allow create, update: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+
     match /familyMessages/{msgId} {
       allow read: if sameFamily(resource.data.familyId);
       allow create: if sameFamily(request.resource.data.familyId)

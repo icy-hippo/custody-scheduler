@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 const TIME_GROUPS = [
   { key: 'morning', label: 'Morning', emoji: '🌅', bg: '#fff9e6', border: '#ffd54f' },
@@ -8,9 +8,14 @@ const TIME_GROUPS = [
   { key: 'anytime', label: 'Anytime', emoji: '⭐', bg: '#e8f5e9', border: '#66bb6a' },
 ];
 
-function RoutineCards({ familyId }) {
+function RoutineCards({ familyId, editable }) {
   const [routines, setRoutines] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const deleteRoutine = async (id) => {
+    await deleteDoc(doc(db, 'routines', id));
+    setRoutines(prev => prev.filter(r => r.id !== id));
+  };
 
   useEffect(() => {
     if (!familyId) {
@@ -73,12 +78,21 @@ function RoutineCards({ familyId }) {
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                 }}>
                   <div style={{ fontSize: '28px', flexShrink: 0 }}>{routine.icon || '⭐'}</div>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 'bold', fontSize: '15px', color: '#333' }}>{routine.title}</div>
                     {routine.description && (
                       <div style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>{routine.description}</div>
                     )}
                   </div>
+                  {editable && (
+                    <button
+                      onClick={() => deleteRoutine(routine.id)}
+                      style={{
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: '#ccc', fontSize: '18px', flexShrink: 0, padding: '0 4px'
+                      }}
+                    >×</button>
+                  )}
                 </div>
               ))}
             </div>

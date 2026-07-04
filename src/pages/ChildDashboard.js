@@ -15,6 +15,7 @@ import { scheduleAllNotifications } from '../services/LocalNotificationService';
 import { getCustodyStatus } from '../utils/custodySchedule';
 import ChildMessages from '../components/ChildMessages';
 import EventDetail from '../components/EventDetail';
+import MoodCheckIn from '../components/MoodCheckIn';
 
 const localDateStr = (d = new Date()) => {
   const y = d.getFullYear();
@@ -468,6 +469,7 @@ function ChildDashboard() {
                 </div>
               );
             })()}
+            <MoodCheckIn userId={user?.uid} familyId={familyId} />
             <WhereAmI custodySchedule={custodySchedule} />
 
             {nextEvent && (

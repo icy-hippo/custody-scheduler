@@ -16,6 +16,7 @@ import ExpenseTracker from '../components/ExpenseTracker';
 import MessageThread from '../components/MessageThread';
 import { createNotification } from '../services/NotificationService';
 import RoutineSetup from '../components/RoutineSetup';
+import RoutineCards from '../components/RoutineCards';
 import ChildInvite from '../components/ChildInvite';
 import { scheduleAllNotifications } from '../services/LocalNotificationService';
 import ChildMessages from '../components/ChildMessages';
@@ -649,12 +650,15 @@ function ParentDashboard() {
                 borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
               }}>👥 {linkedParentId ? 'Co-Parent Linked ✓' : 'Link Co-Parent'}</button>
               {familyId && (
-                <button onClick={() => setShowRoutineSetup(true)} style={{
-                  width: '100%', padding: '12px', marginTop: '8px',
-                  background: 'white', color: '#667eea',
-                  border: '2px solid #667eea',
-                  borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
-                }}>🏠 Manage Routines</button>
+                <>
+                  <button onClick={() => setShowRoutineSetup(true)} style={{
+                    width: '100%', padding: '12px', marginTop: '8px',
+                    background: 'white', color: '#667eea',
+                    border: '2px solid #667eea',
+                    borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
+                  }}>🏠 Add Routine</button>
+                  <RoutineCards familyId={familyId} editable={true} />
+                </>
               )}
               {familyId && (
                 <button onClick={() => setShowChildInvite(true)} style={{
