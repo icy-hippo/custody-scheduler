@@ -321,6 +321,14 @@ function ChildDashboard() {
   const nextEvent = getNextEvent();
 
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [scheduleView, setScheduleView] = useState(
+    () => localStorage.getItem('scheduleView') || 'week'
+  );
+
+  const switchScheduleView = (v) => {
+    setScheduleView(v);
+    localStorage.setItem('scheduleView', v);
+  };
 
   const tabs = [
     { id: 'today', icon: '🏠', label: 'Today', badge: todayEvents.length },
@@ -554,10 +562,35 @@ function ChildDashboard() {
 
         {/* WEEK TAB */}
         {activeTab === 'week' && (
-          <>
-            <VisualSchedule custodySchedule={custodySchedule} events={events} onEventClick={setSelectedEvent} />
-            <CustodyCalendar custodySchedule={custodySchedule} events={events} />
-          </>
+          <div>
+            {/* Segmented toggle */}
+            <div style={{
+              display: 'flex', background: '#f0f0f0', borderRadius: '12px',
+              padding: '4px', marginBottom: '16px'
+            }}>
+              {[{ id: 'week', label: '📅 Week' }, { id: 'month', label: '🗓️ Month' }].map(v => (
+                <button
+                  key={v.id}
+                  onClick={() => switchScheduleView(v.id)}
+                  style={{
+                    flex: 1, padding: '10px', borderRadius: '9px', border: 'none',
+                    fontWeight: '700', fontSize: '14px', cursor: 'pointer',
+                    background: scheduleView === v.id ? 'white' : 'transparent',
+                    color: scheduleView === v.id ? '#333' : '#888',
+                    boxShadow: scheduleView === v.id ? '0 2px 8px rgba(0,0,0,0.12)' : 'none',
+                    transition: 'all 0.2s'
+                  }}
+                >{v.label}</button>
+              ))}
+            </div>
+
+            {scheduleView === 'week' && (
+              <VisualSchedule custodySchedule={custodySchedule} events={events} onEventClick={setSelectedEvent} />
+            )}
+            {scheduleView === 'month' && (
+              <CustodyCalendar custodySchedule={custodySchedule} events={events} />
+            )}
+          </div>
         )}
 
         {/* PACK TAB */}
