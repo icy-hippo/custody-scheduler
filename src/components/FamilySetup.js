@@ -291,9 +291,8 @@ function FamilySetup({ onClose, onFamilyJoined }) {
               <input
                 type="text"
                 value={familyCode}
-                onChange={(e) => setFamilyCode(e.target.value.toUpperCase())}
-                placeholder="Enter 6-digit code"
-                maxLength="6"
+                onChange={(e) => setFamilyCode(e.target.value.toUpperCase().trim())}
+                placeholder="Enter family code"
                 required
                 style={{
                   width: '100%',
