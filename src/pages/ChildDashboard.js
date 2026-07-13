@@ -15,6 +15,7 @@ import { scheduleAllNotifications } from '../services/LocalNotificationService';
 import { registerFCMToken } from '../services/FCMService';
 import { getCustodyStatus } from '../utils/custodySchedule';
 import ChildMessages from '../components/ChildMessages';
+import FamilyPhotos from '../components/FamilyPhotos';
 import EventDetail from '../components/EventDetail';
 import MoodCheckIn from '../components/MoodCheckIn';
 
@@ -568,12 +569,15 @@ function ChildDashboard() {
 
         {/* MESSAGES TAB */}
         {activeTab === 'messages' && (
-          <ChildMessages
-            familyId={familyId}
-            userId={user?.uid}
-            userName={user?.displayName || 'Me'}
-            onUnreadChange={setUnreadMessages}
-          />
+          <>
+            <ChildMessages
+              familyId={familyId}
+              userId={user?.uid}
+              userName={user?.displayName || 'Me'}
+              onUnreadChange={setUnreadMessages}
+            />
+            <FamilyPhotos familyId={familyId} />
+          </>
         )}
 
         {/* COMING UP TAB */}
