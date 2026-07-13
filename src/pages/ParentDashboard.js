@@ -626,6 +626,7 @@ function ParentDashboard() {
                 { id: 'chat', label: '💬 Chat' },
                 { id: 'routines', label: '🏠 Routines' },
                 { id: 'contacts', label: '📋 Contacts' },
+                { id: 'photos', label: '📸 Photos' },
               ].map(st => (
                 <button
                   key={st.id}
@@ -677,6 +678,7 @@ function ParentDashboard() {
             )}
 
             {/* Routines sub-tab */}
+
             {familySubTab === 'routines' && familyId && (
               <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -699,19 +701,21 @@ function ParentDashboard() {
 
             {/* Contacts sub-tab */}
             {familySubTab === 'contacts' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {familyId ? (
-                  <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
-                    <EmergencyContacts familyId={familyId} editable={true} />
-                  </div>
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', color: '#aaa' }}>
-                    <div style={{ fontSize: '40px', marginBottom: '10px' }}>📋</div>
-                    <div style={{ fontWeight: '600', color: '#666' }}>Set up your family first to add contacts</div>
-                  </div>
-                )}
-                <FamilyPhotos familyId={familyId} />
-              </div>
+              familyId ? (
+                <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+                  <EmergencyContacts familyId={familyId} editable={true} />
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', color: '#aaa' }}>
+                  <div style={{ fontSize: '40px', marginBottom: '10px' }}>📋</div>
+                  <div style={{ fontWeight: '600', color: '#666' }}>Set up your family first to add contacts</div>
+                </div>
+              )
+            )}
+
+            {/* Photos sub-tab */}
+            {familySubTab === 'photos' && (
+              <FamilyPhotos familyId={familyId} />
             )}
           </div>
         )}
