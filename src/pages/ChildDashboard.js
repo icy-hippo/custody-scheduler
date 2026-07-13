@@ -3,7 +3,6 @@ import { auth, db } from '../firebase';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
-import WhereAmI from '../components/WhereAmI';
 import PackList from '../components/PackList';
 import RoutineCards from '../components/RoutineCards';
 import FamilySetup from '../components/FamilySetup';
@@ -19,6 +18,7 @@ import FamilyPhotos from '../components/FamilyPhotos';
 import EventDetail from '../components/EventDetail';
 import MoodCheckIn from '../components/MoodCheckIn';
 import EmergencyContacts from '../components/EmergencyContacts';
+import RoutineSetup from '../components/RoutineSetup';
 
 const localDateStr = (d = new Date()) => {
   const y = d.getFullYear();
@@ -324,6 +324,7 @@ function ChildDashboard() {
 
   const [childName, setChildName] = useState('');
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [familySubTab, setFamilySubTab] = useState('photos');
   const [scheduleView, setScheduleView] = useState(
     () => localStorage.getItem('scheduleView') || 'week'
   );
@@ -337,7 +338,8 @@ function ChildDashboard() {
     { id: 'today', icon: '🏠', label: 'Today', badge: todayEvents.length },
     { id: 'week', icon: '🗓️', label: 'Schedule' },
     { id: 'pack', icon: '🎒', label: 'Pack' },
-    { id: 'messages', icon: '💬', label: 'Family', badge: unreadMessages },
+    { id: 'messages', icon: '💬', label: 'Chat', badge: unreadMessages },
+    { id: 'family', icon: '👨‍👩‍👧', label: 'Family' },
     { id: 'more', icon: '⚙️', label: 'More' },
   ];
 
@@ -496,7 +498,6 @@ function ChildDashboard() {
               );
             })()}
             <MoodCheckIn userId={user?.uid} familyId={familyId} />
-            <WhereAmI custodySchedule={custodySchedule} />
 
             {nextEvent && (
               <div
@@ -604,17 +605,68 @@ function ChildDashboard() {
           <PackList events={events} custodySchedule={custodySchedule} familyId={familyId} userId={user?.uid} />
         )}
 
-        {/* MESSAGES TAB */}
+        {/* CHAT TAB */}
         {activeTab === 'messages' && (
-          <>
-            <ChildMessages
-              familyId={familyId}
-              userId={user?.uid}
-              userName={user?.displayName || 'Me'}
-              onUnreadChange={setUnreadMessages}
-            />
-            <FamilyPhotos familyId={familyId} />
-          </>
+          <ChildMessages
+            familyId={familyId}
+            userId={user?.uid}
+            userName={user?.displayName || 'Me'}
+            onUnreadChange={setUnreadMessages}
+          />
+        )}
+
+        {/* FAMILY TAB */}
+        {activeTab === 'family' && (
+          <div>
+            {/* Sub-tab toggle */}
+            <div style={{
+              display: 'flex', background: 'white', borderRadius: '14px',
+              padding: '4px', marginBottom: '16px',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+              overflowX: 'auto', gap: '2px'
+            }}>
+              {[
+                { id: 'photos', label: '📸 Photos' },
+                { id: 'routines', label: '🏠 Routines' },
+                { id: 'contacts', label: '📋 Contacts' },
+              ].map(st => (
+                <button
+                  key={st.id}
+                  onClick={() => setFamilySubTab(st.id)}
+                  style={{
+                    flexShrink: 0, padding: '10px 14px', borderRadius: '10px', border: 'none',
+                    fontWeight: '700', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
+                    background: familySubTab === st.id ? 'linear-gradient(135deg, #f093fb, #4facfe)' : 'transparent',
+                    color: familySubTab === st.id ? 'white' : '#888',
+                    boxShadow: familySubTab === st.id ? '0 3px 10px rgba(240,147,251,0.35)' : 'none',
+                    transition: 'all 0.2s'
+                  }}
+                >{st.label}</button>
+              ))}
+            </div>
+
+            {familySubTab === 'photos' && <FamilyPhotos familyId={familyId} />}
+
+            {familySubTab === 'routines' && (
+              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+                <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '15px', fontWeight: '700' }}>🏠 Daily Routines</h3>
+                <RoutineCards familyId={familyId} userId={user?.uid} />
+              </div>
+            )}
+
+            {familySubTab === 'contacts' && (
+              familyId ? (
+                <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+                  <EmergencyContacts familyId={familyId} editable={false} />
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', color: '#aaa' }}>
+                  <div style={{ fontSize: '40px', marginBottom: '10px' }}>📋</div>
+                  <div style={{ fontWeight: '600', color: '#666' }}>Join a family to see contacts</div>
+                </div>
+              )
+            )}
+          </div>
         )}
 
         {/* COMING UP TAB */}
@@ -655,21 +707,6 @@ function ChildDashboard() {
         {/* MORE TAB */}
         {activeTab === 'more' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {/* Routines */}
-            {familyId && (
-              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>🏠 Daily Routines</h3>
-                <RoutineCards familyId={familyId} userId={user.uid} />
-              </div>
-            )}
-
-            {/* Emergency Contacts */}
-            {familyId && (
-              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                <EmergencyContacts familyId={familyId} editable={false} />
-              </div>
-            )}
-
             {/* Family & Account */}
             <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
               <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Settings</h3>
