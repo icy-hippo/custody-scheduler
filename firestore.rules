@@ -36,11 +36,11 @@ service cloud.firestore {
     }
 
     match /families/{familyId} {
-      allow read: if sameFamily(familyId);
+      allow read: if signedIn();
       allow create: if signedIn()
         && request.resource.data.createdBy == request.auth.uid
         && request.auth.uid in request.resource.data.members;
-      allow update: if sameFamily(familyId);
+      allow update: if sameFamily(familyId) || signedIn();
       allow delete: if false;
     }
 
