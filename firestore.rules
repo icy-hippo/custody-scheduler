@@ -120,6 +120,13 @@ service cloud.firestore {
         && request.resource.data.createdBy == request.auth.uid;
     }
 
+    match /familyPhotos/{photoId} {
+      allow read: if sameFamily(resource.data.familyId);
+      allow create: if sameFamily(request.resource.data.familyId)
+        && request.resource.data.uploadedBy == request.auth.uid;
+      allow delete: if sameFamily(resource.data.familyId);
+    }
+
     match /visualLabels/{labelId} {
       allow read, update, delete: if sameFamily(resource.data.familyId);
       allow create: if sameFamily(request.resource.data.familyId)

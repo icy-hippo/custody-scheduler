@@ -23,6 +23,7 @@ import { scheduleAllNotifications } from '../services/LocalNotificationService';
 import { registerFCMToken } from '../services/FCMService';
 import ChildMessages from '../components/ChildMessages';
 import HandoffNotes from '../components/HandoffNotes';
+import FamilyPhotos from '../components/FamilyPhotos';
 import EventDetail from '../components/EventDetail';
 
 const localDateStr = (d = new Date()) => {
@@ -612,6 +613,7 @@ function ParentDashboard() {
                 currentUserName={currentUserName}
               />
             )}
+            <FamilyPhotos familyId={familyId} />
           </div>
         )}
 
