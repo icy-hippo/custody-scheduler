@@ -114,7 +114,8 @@ service cloud.firestore {
     }
 
     match /handoffNotes/{noteId} {
-      allow read, update, delete: if sameFamily(resource.data.familyId);
+      allow read: if signedIn() && (resource == null || sameFamily(resource.data.familyId));
+      allow update, delete: if sameFamily(resource.data.familyId);
       allow create: if sameFamily(request.resource.data.familyId)
         && request.resource.data.createdBy == request.auth.uid;
     }
