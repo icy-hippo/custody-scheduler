@@ -620,10 +620,12 @@ function ParentDashboard() {
             <div style={{
               display: 'flex', background: 'white', borderRadius: '14px',
               padding: '4px', marginBottom: '16px',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.07)'
+              boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+              overflowX: 'auto', gap: '2px'
             }}>
               {[
                 { id: 'chat', label: '💬 Chat' },
+                { id: 'handoff', label: '🤝 Handoff' },
                 { id: 'routines', label: '🏠 Routines' },
                 { id: 'contacts', label: '📋 Contacts' },
                 { id: 'photos', label: '📸 Photos' },
@@ -632,8 +634,8 @@ function ParentDashboard() {
                   key={st.id}
                   onClick={() => setFamilySubTab(st.id)}
                   style={{
-                    flex: 1, padding: '10px 4px', borderRadius: '10px', border: 'none',
-                    fontWeight: '700', fontSize: '13px', cursor: 'pointer',
+                    flexShrink: 0, padding: '10px 14px', borderRadius: '10px', border: 'none',
+                    fontWeight: '700', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
                     background: familySubTab === st.id ? 'linear-gradient(135deg, #667eea, #9b59b6)' : 'transparent',
                     color: familySubTab === st.id ? 'white' : '#888',
                     boxShadow: familySubTab === st.id ? '0 3px 10px rgba(102,126,234,0.35)' : 'none',
@@ -665,15 +667,19 @@ function ParentDashboard() {
                     />
                   </div>
                 )}
-                {familyId && (
-                  <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
-                    <HandoffNotes
-                      familyId={familyId}
-                      currentUserName={currentUserName}
-                    />
-                  </div>
-                )}
-                {familyId && <FamilyMoodSummary familyId={familyId} />}
+              </div>
+            )}
+
+            {/* Handoff sub-tab */}
+            {familySubTab === 'handoff' && familyId && (
+              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+                <HandoffNotes familyId={familyId} currentUserName={currentUserName} />
+              </div>
+            )}
+            {familySubTab === 'handoff' && !familyId && (
+              <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', color: '#aaa' }}>
+                <div style={{ fontSize: '40px', marginBottom: '10px' }}>🤝</div>
+                <div style={{ fontWeight: '600', color: '#666' }}>Set up your family first to use handoff notes</div>
               </div>
             )}
 
