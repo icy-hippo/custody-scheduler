@@ -25,6 +25,7 @@ import ChildMessages from '../components/ChildMessages';
 import HandoffNotes from '../components/HandoffNotes';
 import FamilyPhotos from '../components/FamilyPhotos';
 import EventDetail from '../components/EventDetail';
+import EmergencyContacts from '../components/EmergencyContacts';
 
 const localDateStr = (d = new Date()) => {
   const y = d.getFullYear();
@@ -682,6 +683,12 @@ function ParentDashboard() {
                 }}>👧 Invite Child</button>
               )}
             </div>
+
+            {familyId && (
+              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                <EmergencyContacts familyId={familyId} editable={true} />
+              </div>
+            )}
 
             <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
               <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Legal</h3>

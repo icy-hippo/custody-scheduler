@@ -18,6 +18,7 @@ import ChildMessages from '../components/ChildMessages';
 import FamilyPhotos from '../components/FamilyPhotos';
 import EventDetail from '../components/EventDetail';
 import MoodCheckIn from '../components/MoodCheckIn';
+import EmergencyContacts from '../components/EmergencyContacts';
 
 const localDateStr = (d = new Date()) => {
   const y = d.getFullYear();
@@ -618,6 +619,11 @@ function ChildDashboard() {
         {/* MORE TAB */}
         {activeTab === 'more' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {familyId && (
+              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                <EmergencyContacts familyId={familyId} editable={false} />
+              </div>
+            )}
             <button onClick={() => setShowFamilySetup(true)} style={{
               width: '100%', padding: '18px', background: 'white',
               border: '2px solid #34a853', borderRadius: '16px',
