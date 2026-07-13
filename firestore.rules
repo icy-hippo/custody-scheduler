@@ -31,7 +31,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isSelf(userId) || sameFamily(resource.data.familyId);
       allow create: if isSelf(userId);
-      allow update: if isSelf(userId) && familyIdUnchanged();
+      allow update: if isSelf(userId);
       allow delete: if false;
     }
 

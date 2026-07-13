@@ -76,9 +76,9 @@ function FamilySetup({ onClose, onFamilyJoined }) {
       }
 
       // Update user document with familyId
-      await updateDoc(doc(db, 'users', user.uid), {
+      await setDoc(doc(db, 'users', user.uid), {
         familyId: familyCode
-      });
+      }, { merge: true });
 
       alert('Successfully joined family!');
       if (onFamilyJoined) onFamilyJoined(familyCode);
