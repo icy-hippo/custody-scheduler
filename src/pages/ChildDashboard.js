@@ -89,19 +89,23 @@ function ChildDashboard() {
       }
 
       // Also search parentInvites for any invite involving this user
-      const inviteSnap = await getDocs(query(
-        collection(db, 'parentInvites'),
-        where('status', '==', 'accepted')
-      ));
-      inviteSnap.docs.forEach(d => {
-        const inv = d.data();
-        if (inv.invitedBy === user.uid || inv.acceptedBy === user.uid ||
-            inv.invitedEmail === userData.email) {
-          if (inv.invitedBy) familyIdsToTry.add(inv.invitedBy);
-          if (inv.acceptedBy) familyIdsToTry.add(inv.acceptedBy);
-          if (inv.familyId) familyIdsToTry.add(inv.familyId);
-        }
-      });
+      try {
+        const inviteSnap = await getDocs(query(
+          collection(db, 'parentInvites'),
+          where('status', '==', 'accepted')
+        ));
+        inviteSnap.docs.forEach(d => {
+          const inv = d.data();
+          if (inv.invitedBy === user.uid || inv.acceptedBy === user.uid ||
+              inv.invitedEmail === userData.email) {
+            if (inv.invitedBy) familyIdsToTry.add(inv.invitedBy);
+            if (inv.acceptedBy) familyIdsToTry.add(inv.acceptedBy);
+            if (inv.familyId) familyIdsToTry.add(inv.familyId);
+          }
+        });
+      } catch (e) {
+        // child accounts don't have permission to query parentInvites
+      }
 
       const eventsRef = collection(db, 'events');
       const allEvents = [];
@@ -179,6 +183,7 @@ function ChildDashboard() {
       }
 
       // Last resort: search all parentInvites accepted involving this user's family
+      try {
       const inviteSnap = await getDocs(query(
         collection(db, 'parentInvites'),
         where('familyId', '==', fid),
@@ -194,6 +199,9 @@ function ChildDashboard() {
             return;
           }
         }
+      }
+      } catch (e) {
+        // child accounts don't have permission to query parentInvites
       }
     } catch (err) {
       console.error('Error loading custody schedule:', err);
