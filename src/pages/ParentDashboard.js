@@ -397,44 +397,28 @@ function ParentDashboard() {
     { id: 'settings', icon: '⚙️', label: 'More' },
   ];
 
-  const pageStyle = {
-    minHeight: '100vh',
-    background: '#f5f7fa',
-    fontFamily: 'system-ui',
-    paddingBottom: '72px'
-  };
-
-  const contentStyle = {
-    padding: '16px',
-    maxWidth: '700px',
-    margin: '0 auto'
-  };
-
-  const headerStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '16px',
-    background: 'white',
-    padding: '14px 16px',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-  };
-
   return (
-    <div style={pageStyle}>
-      <div style={contentStyle}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #f0f4ff 0%, #fdf0f8 100%)', fontFamily: 'system-ui', paddingBottom: '72px' }}>
 
-        {/* Header */}
-        <div style={headerStyle}>
+      {/* Sticky header */}
+      <div style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #9b59b6 100%)',
+        padding: '16px 20px 14px',
+        boxShadow: '0 4px 20px rgba(102,126,234,0.3)',
+        position: 'sticky', top: 0, zIndex: 50
+      }}>
+        <div style={{ maxWidth: '700px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1 style={{ margin: 0, color: '#333', fontSize: '20px' }}>HarmonyHub</h1>
-            <p style={{ margin: '2px 0 0 0', color: '#888', fontSize: '12px' }}>
-              {currentUserName || 'Parent Dashboard'}
+            <h1 style={{ margin: 0, color: 'white', fontSize: '20px', fontWeight: '800', letterSpacing: '-0.3px' }}>HarmonyHub</h1>
+            <p style={{ margin: '2px 0 0 0', color: 'rgba(255,255,255,0.75)', fontSize: '12px', fontWeight: '500' }}>
+              {currentUserName ? `Welcome back, ${currentUserName}` : 'Parent Dashboard'}
             </p>
           </div>
           <NotificationCenter userId={user.uid} />
         </div>
+      </div>
+
+      <div style={{ padding: '16px', maxWidth: '700px', margin: '0 auto' }}>
 
         {/* EVENTS TAB */}
         {activeTab === 'events' && (
@@ -444,135 +428,161 @@ function ParentDashboard() {
               onClick={() => setShowAddEvent(true)}
               style={{
                 width: '100%',
-                padding: '14px',
-                background: '#667eea',
+                padding: '15px',
+                background: 'linear-gradient(135deg, #667eea 0%, #9b59b6 100%)',
                 color: 'white',
                 border: 'none',
-                borderRadius: '12px',
+                borderRadius: '14px',
                 fontSize: '16px',
-                fontWeight: 'bold',
+                fontWeight: '700',
                 cursor: 'pointer',
                 marginBottom: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '8px',
+                boxShadow: '0 4px 16px rgba(102,126,234,0.4)',
+                letterSpacing: '0.2px'
               }}
             >
-              <span style={{ fontSize: '20px' }}>+</span> Add New Event
+              <span style={{ fontSize: '22px', lineHeight: 1 }}>+</span> Add New Event
             </button>
 
             {/* Search */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search events..."
+                placeholder="Search events…"
                 style={{
-                  flex: 1, padding: '10px 14px', border: '1px solid #ddd',
-                  borderRadius: '8px', fontSize: '15px', boxSizing: 'border-box'
+                  flex: 1, padding: '11px 16px', border: '1.5px solid #e8e8f0',
+                  borderRadius: '12px', fontSize: '15px', boxSizing: 'border-box',
+                  background: 'white', outline: 'none', color: '#333',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
                 }}
               />
               {searchTerm && (
                 <button onClick={() => setSearchTerm('')} style={{
-                  padding: '10px 14px', background: '#f5f7fa', border: '1px solid #ddd',
-                  borderRadius: '8px', cursor: 'pointer', color: '#666', fontWeight: 'bold'
+                  padding: '10px 14px', background: 'white', border: '1.5px solid #e8e8f0',
+                  borderRadius: '12px', cursor: 'pointer', color: '#666', fontWeight: 'bold',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
                 }}>✕</button>
               )}
             </div>
 
             {/* Category pills */}
-            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px' }}>
-              {['All', 'School', 'Sports', 'Medical', 'Activities', 'Family', 'Other'].map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setFilterCategory(cat === 'All' ? '' : (filterCategory === cat ? '' : cat))}
-                  style={{
-                    padding: '6px 14px', borderRadius: '20px', border: 'none', cursor: 'pointer',
-                    background: (cat === 'All' && filterCategory === '') || filterCategory === cat ? '#667eea' : '#eee',
-                    color: (cat === 'All' && filterCategory === '') || filterCategory === cat ? 'white' : '#555',
-                    fontWeight: '600', fontSize: '13px', flexShrink: 0, whiteSpace: 'nowrap'
-                  }}
-                >{cat}</button>
-              ))}
+            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '4px' }}>
+              {['All', 'School', 'Sports', 'Medical', 'Activities', 'Family', 'Other'].map(cat => {
+                const active = (cat === 'All' && filterCategory === '') || filterCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setFilterCategory(cat === 'All' ? '' : (filterCategory === cat ? '' : cat))}
+                    style={{
+                      padding: '7px 15px', borderRadius: '20px', border: 'none', cursor: 'pointer',
+                      background: active ? 'linear-gradient(135deg, #667eea, #9b59b6)' : 'white',
+                      color: active ? 'white' : '#666',
+                      fontWeight: '600', fontSize: '13px', flexShrink: 0, whiteSpace: 'nowrap',
+                      boxShadow: active ? '0 3px 10px rgba(102,126,234,0.35)' : '0 1px 4px rgba(0,0,0,0.08)'
+                    }}
+                  >{cat}</button>
+                );
+              })}
             </div>
 
             {/* Events List */}
-            <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-              <h2 style={{ marginTop: 0, color: '#333', fontSize: '17px' }}>Upcoming Events</h2>
-              {loading ? (
-                <p style={{ color: '#666', textAlign: 'center', padding: '32px' }}>Loading...</p>
-              ) : events.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '32px', color: '#666' }}>
-                  <p style={{ fontSize: '40px', margin: '0 0 12px 0' }}>📅</p>
-                  <p style={{ margin: 0 }}>No events yet. Tap "Add New Event" to start!</p>
-                </div>
-              ) : filteredEvents.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '32px', color: '#666' }}>
-                  <p style={{ fontSize: '40px', margin: '0 0 12px 0' }}>🔍</p>
-                  <p style={{ margin: 0 }}>No events match your search.</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {filteredEvents.map(event => (
-                    <div
-                      key={event.id}
-                      onClick={() => setSelectedEvent(event)}
-                      style={{
-                        padding: '12px', border: `2px solid ${event.color}`,
-                        borderLeft: `6px solid ${event.color}`, borderRadius: '8px',
-                        background: `${event.color}10`, cursor: 'pointer'
-                      }}
-                    >
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <div style={{ fontSize: '26px', flexShrink: 0 }}>{event.icon}</div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 'bold', color: '#333', fontSize: '15px', wordBreak: 'break-word' }}>{event.title}</div>
-                          <div style={{ color: '#666', fontSize: '12px', marginTop: '2px' }}>
-                            {formatDate(event.date)}{event.time && ` at ${event.time}`}
-                            {event.location && ` • ${event.location}`}
-                          </div>
-                          {event.notes && <div style={{ color: '#888', fontSize: '11px', marginTop: '2px' }}>{event.notes}</div>}
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '48px', color: '#aaa', background: 'white', borderRadius: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>⏳</div>
+                <div style={{ fontSize: '14px' }}>Loading events…</div>
+              </div>
+            ) : events.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '48px', color: '#aaa', background: 'white', borderRadius: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                <div style={{ fontSize: '48px', marginBottom: '12px' }}>📅</div>
+                <div style={{ fontWeight: '700', color: '#555', fontSize: '16px', marginBottom: '6px' }}>No events yet</div>
+                <div style={{ fontSize: '14px' }}>Tap "Add New Event" to get started</div>
+              </div>
+            ) : filteredEvents.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '48px', color: '#aaa', background: 'white', borderRadius: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔍</div>
+                <div style={{ fontWeight: '700', color: '#555', fontSize: '16px' }}>No matches</div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {filteredEvents.map(event => (
+                  <div
+                    key={event.id}
+                    onClick={() => setSelectedEvent(event)}
+                    style={{
+                      background: 'white',
+                      borderRadius: '16px',
+                      padding: '14px',
+                      boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+                      cursor: 'pointer',
+                      border: `1px solid ${event.color}30`,
+                    }}
+                  >
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                      {/* Colored icon circle */}
+                      <div style={{
+                        width: '48px', height: '48px', borderRadius: '14px', flexShrink: 0,
+                        background: `${event.color}18`, border: `2px solid ${event.color}40`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '24px'
+                      }}>{event.icon}</div>
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                          <div style={{ fontWeight: '700', color: '#222', fontSize: '15px', lineHeight: 1.3 }}>{event.title}</div>
+                          <div style={{
+                            background: event.color, color: 'white', padding: '2px 8px',
+                            borderRadius: '20px', fontSize: '10px', fontWeight: '700', flexShrink: 0, whiteSpace: 'nowrap'
+                          }}>{event.category}</div>
                         </div>
-                        <div style={{
-                          background: event.color, color: 'white', padding: '2px 7px',
-                          borderRadius: '10px', fontSize: '10px', fontWeight: 'bold', flexShrink: 0
-                        }}>{event.category}</div>
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                        {event.isRecurring && (
-                          <span style={{
-                            background: '#667eea', color: 'white', padding: '3px 8px',
-                            borderRadius: '10px', fontSize: '10px', fontWeight: 'bold'
-                          }}>🔄 Recurring</span>
-                        )}
-                        {/* RSVP badge */}
-                        {event.rsvp && user && event.rsvp[user.uid] && (
-                          <span style={{
-                            padding: '3px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold',
-                            background: event.rsvp[user.uid] === 'yes' ? '#34a853' : event.rsvp[user.uid] === 'maybe' ? '#ffa500' : '#ff4444',
-                            color: 'white'
-                          }}>
-                            {event.rsvp[user.uid] === 'yes' ? '✅ Going' : event.rsvp[user.uid] === 'maybe' ? '🤔 Maybe' : '❌ Not going'}
-                          </span>
-                        )}
-                        <button onClick={e => { e.stopPropagation(); openEditEvent(event.id); }} style={{
-                          background: '#4facfe', color: 'white', border: 'none',
-                          borderRadius: '8px', padding: '5px 14px', cursor: 'pointer',
-                          fontWeight: 'bold', fontSize: '13px'
-                        }}>Edit</button>
-                        <button onClick={e => { e.stopPropagation(); deleteEvent(event.id); }} style={{
-                          background: '#ff4444', color: 'white', border: 'none',
-                          borderRadius: '8px', padding: '5px 14px', cursor: 'pointer',
-                          fontWeight: 'bold', fontSize: '13px'
-                        }}>Delete</button>
+                        <div style={{ color: '#888', fontSize: '12px', marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                          <span>📅 {formatDate(event.date)}</span>
+                          {event.time && <span>🕐 {event.time}</span>}
+                          {event.location && <span>📍 {event.location}</span>}
+                        </div>
+                        {event.notes && <div style={{ color: '#aaa', fontSize: '11px', marginTop: '3px' }}>{event.notes}</div>}
+
+                        {/* Badges + action row */}
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          {event.isRecurring && (
+                            <span style={{
+                              background: '#667eea15', color: '#667eea', padding: '3px 8px',
+                              borderRadius: '20px', fontSize: '11px', fontWeight: '700', border: '1px solid #667eea30'
+                            }}>🔄 Recurring</span>
+                          )}
+                          {event.rsvp && user && event.rsvp[user.uid] && (
+                            <span style={{
+                              padding: '3px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '700',
+                              background: event.rsvp[user.uid] === 'yes' ? '#34a85320' : event.rsvp[user.uid] === 'maybe' ? '#ffa50020' : '#ff444420',
+                              color: event.rsvp[user.uid] === 'yes' ? '#34a853' : event.rsvp[user.uid] === 'maybe' ? '#e09000' : '#ff4444',
+                              border: `1px solid ${event.rsvp[user.uid] === 'yes' ? '#34a85350' : event.rsvp[user.uid] === 'maybe' ? '#ffa50050' : '#ff444450'}`
+                            }}>
+                              {event.rsvp[user.uid] === 'yes' ? '✅ Going' : event.rsvp[user.uid] === 'maybe' ? '🤔 Maybe' : '❌ Not going'}
+                            </span>
+                          )}
+                          <div style={{ flex: 1 }} />
+                          <button onClick={e => { e.stopPropagation(); openEditEvent(event.id); }} style={{
+                            background: '#667eea', color: 'white', border: 'none',
+                            borderRadius: '8px', padding: '5px 14px', cursor: 'pointer',
+                            fontWeight: '700', fontSize: '12px'
+                          }}>Edit</button>
+                          <button onClick={e => { e.stopPropagation(); deleteEvent(event.id); }} style={{
+                            background: 'white', color: '#ff4444', border: '1.5px solid #ff444460',
+                            borderRadius: '8px', padding: '5px 14px', cursor: 'pointer',
+                            fontWeight: '700', fontSize: '12px'
+                          }}>Delete</button>
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -729,7 +739,7 @@ function ParentDashboard() {
           </div>
         )}
 
-      </div>
+      </div>{/* end inner content padding div */}
 
       <BottomTabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 

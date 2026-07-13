@@ -212,11 +212,13 @@ function ChildDashboard() {
 
   const loadFamily = async () => {
     if (!user) return;
-    
+
     try {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (userDoc.exists() && userDoc.data().familyId) {
-        setFamilyId(userDoc.data().familyId);
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        if (data.familyId) setFamilyId(data.familyId);
+        if (data.name || data.displayName) setChildName(data.name || data.displayName);
       }
     } catch (err) {
       console.error('Error loading family:', err);
@@ -320,6 +322,7 @@ function ChildDashboard() {
   const todayEvents = getTodayEvents();
   const nextEvent = getNextEvent();
 
+  const [childName, setChildName] = useState('');
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [scheduleView, setScheduleView] = useState(
     () => localStorage.getItem('scheduleView') || 'week'
@@ -354,22 +357,25 @@ function ChildDashboard() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      background: 'linear-gradient(160deg, #fef9ff 0%, #eef8ff 100%)',
       paddingBottom: '72px',
       fontFamily: 'system-ui'
     }}>
       {/* Header */}
       <div style={{
-        background: 'white',
-        padding: '16px 20px 12px 20px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        background: 'linear-gradient(135deg, #f093fb 0%, #4facfe 100%)',
+        padding: '16px 20px 14px 20px',
+        boxShadow: '0 4px 20px rgba(240,147,251,0.3)',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        position: 'sticky', top: 0, zIndex: 50
       }}>
         <div>
-          <h1 style={{ margin: 0, color: '#333', fontSize: '20px', fontWeight: '700' }}>My Schedule</h1>
-          <p style={{ margin: '2px 0 0 0', color: '#888', fontSize: '12px' }}>
+          <h1 style={{ margin: 0, color: 'white', fontSize: '20px', fontWeight: '800', letterSpacing: '-0.3px' }}>
+            {childName ? `Hi, ${childName}! 👋` : 'My Schedule'}
+          </h1>
+          <p style={{ margin: '2px 0 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '12px', fontWeight: '500' }}>
             {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
         </div>
