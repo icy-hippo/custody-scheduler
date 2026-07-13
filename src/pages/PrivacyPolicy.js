@@ -45,7 +45,7 @@ function PrivacyPolicy() {
           </button>
           <div>
             <h1 style={{ margin: 0, fontSize: '24px' }}>Privacy Policy</h1>
-            <p style={{ margin: '4px 0 0 0', opacity: 0.85, fontSize: '14px' }}>HarmonyHub — Last updated June 28, 2025</p>
+            <p style={{ margin: '4px 0 0 0', opacity: 0.85, fontSize: '14px' }}>HarmonyHub — Last updated July 6, 2026</p>
           </div>
         </div>
       </div>
