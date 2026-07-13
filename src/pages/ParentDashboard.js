@@ -391,8 +391,8 @@ function ParentDashboard() {
 
   const tabs = [
     { id: 'events', icon: '📅', label: 'Events' },
-    { id: 'calendar', icon: '🏠', label: 'Calendar' },
-    { id: 'messages', icon: '💬', label: 'Messages' },
+    { id: 'calendar', icon: '🗓️', label: 'Calendar' },
+    { id: 'family', icon: '👨‍👩‍👧', label: 'Family' },
     { id: 'expenses', icon: '💰', label: 'Expenses' },
     { id: 'settings', icon: '⚙️', label: 'More' },
   ];
@@ -439,7 +439,6 @@ function ParentDashboard() {
         {/* EVENTS TAB */}
         {activeTab === 'events' && (
           <div>
-            <FamilyMoodSummary familyId={familyId} />
             <button
               onClick={() => setShowAddEvent(true)}
               style={{
@@ -540,12 +539,22 @@ function ParentDashboard() {
                           borderRadius: '10px', fontSize: '10px', fontWeight: 'bold', flexShrink: 0
                         }}>{event.category}</div>
                       </div>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                         {event.isRecurring && (
                           <span style={{
                             background: '#667eea', color: 'white', padding: '3px 8px',
                             borderRadius: '10px', fontSize: '10px', fontWeight: 'bold'
                           }}>🔄 Recurring</span>
+                        )}
+                        {/* RSVP badge */}
+                        {event.rsvp && user && event.rsvp[user.uid] && (
+                          <span style={{
+                            padding: '3px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold',
+                            background: event.rsvp[user.uid] === 'yes' ? '#34a853' : event.rsvp[user.uid] === 'maybe' ? '#ffa500' : '#ff4444',
+                            color: 'white'
+                          }}>
+                            {event.rsvp[user.uid] === 'yes' ? '✅ Going' : event.rsvp[user.uid] === 'maybe' ? '🤔 Maybe' : '❌ Not going'}
+                          </span>
                         )}
                         <button onClick={e => { e.stopPropagation(); openEditEvent(event.id); }} style={{
                           background: '#4facfe', color: 'white', border: 'none',
@@ -592,27 +601,41 @@ function ParentDashboard() {
           </div>
         )}
 
-        {/* MESSAGES TAB */}
-        {activeTab === 'messages' && (
+        {/* FAMILY TAB */}
+        {activeTab === 'family' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <MessageThread
-              familyId={familyId}
-              linkedParentId={linkedParentId}
-              currentUserName={currentUserName}
-              fullPage
-            />
-            {familyId && (
-              <ChildMessages
+            {/* Section headers to separate content */}
+            <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>💬 Co-Parent Messages</h3>
+              <MessageThread
                 familyId={familyId}
-                userId={user?.uid}
-                userName={currentUserName}
+                linkedParentId={linkedParentId}
+                currentUserName={currentUserName}
+                fullPage
               />
+            </div>
+            {familyId && (
+              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>👧 Child Messages</h3>
+                <ChildMessages
+                  familyId={familyId}
+                  userId={user?.uid}
+                  userName={currentUserName}
+                />
+              </div>
             )}
             {familyId && (
-              <HandoffNotes
-                familyId={familyId}
-                currentUserName={currentUserName}
-              />
+              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                <HandoffNotes
+                  familyId={familyId}
+                  currentUserName={currentUserName}
+                />
+              </div>
+            )}
+            {familyId && (
+              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                <FamilyMoodSummary familyId={familyId} />
+              </div>
             )}
             <FamilyPhotos familyId={familyId} />
           </div>
@@ -634,22 +657,35 @@ function ParentDashboard() {
           )
         )}
 
-        {/* SETTINGS TAB */}
+        {/* MORE TAB */}
         {activeTab === 'settings' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-              <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Account</h3>
-              <p style={{ margin: '0 0 4px 0', color: '#666', fontSize: '14px' }}>Logged in as <strong>{user.email}</strong></p>
-              <p style={{ margin: '0 0 16px 0', color: '#888', fontSize: '13px' }}>Name: {currentUserName}</p>
-              <button onClick={handleLogout} style={{
-                width: '100%', padding: '12px', background: 'white', color: '#ff4444',
-                border: '2px solid #ff4444', borderRadius: '10px', fontWeight: 'bold',
-                cursor: 'pointer', fontSize: '14px'
-              }}>Log Out</button>
-            </div>
 
+            {/* Routines */}
+            {familyId && (
+              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h3 style={{ margin: 0, color: '#333', fontSize: '16px' }}>🏠 Daily Routines</h3>
+                  <button onClick={() => setShowRoutineSetup(true)} style={{
+                    padding: '6px 14px', background: '#667eea', color: 'white',
+                    border: 'none', borderRadius: '8px', fontWeight: 'bold',
+                    cursor: 'pointer', fontSize: '13px'
+                  }}>+ Add</button>
+                </div>
+                <RoutineCards familyId={familyId} editable={true} />
+              </div>
+            )}
+
+            {/* Emergency Contacts */}
+            {familyId && (
+              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                <EmergencyContacts familyId={familyId} editable={true} />
+              </div>
+            )}
+
+            {/* Family Setup */}
             <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-              <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Family</h3>
+              <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Family Setup</h3>
               <button onClick={() => setShowFamilySetup(true)} style={{
                 width: '100%', padding: '12px', marginBottom: '8px',
                 background: familyId ? 'white' : '#34a853', color: familyId ? '#34a853' : 'white',
@@ -657,26 +693,15 @@ function ParentDashboard() {
                 borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
               }}>👨‍👩‍👧 {familyId ? `Family Code: ${familyId}` : 'Set Up Family'}</button>
               <button onClick={() => setShowParentLinking(true)} style={{
-                width: '100%', padding: '12px',
+                width: '100%', padding: '12px', marginBottom: '8px',
                 background: linkedParentId ? 'white' : '#ff6b9d',
                 color: linkedParentId ? '#ff6b9d' : 'white',
                 border: linkedParentId ? '2px solid #ff6b9d' : 'none',
                 borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
               }}>👥 {linkedParentId ? 'Co-Parent Linked ✓' : 'Link Co-Parent'}</button>
               {familyId && (
-                <>
-                  <button onClick={() => setShowRoutineSetup(true)} style={{
-                    width: '100%', padding: '12px', marginTop: '8px',
-                    background: 'white', color: '#667eea',
-                    border: '2px solid #667eea',
-                    borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
-                  }}>🏠 Add Routine</button>
-                  <RoutineCards familyId={familyId} editable={true} />
-                </>
-              )}
-              {familyId && (
                 <button onClick={() => setShowChildInvite(true)} style={{
-                  width: '100%', padding: '12px', marginTop: '8px',
+                  width: '100%', padding: '12px',
                   background: 'white', color: '#43a047',
                   border: '2px solid #43a047',
                   borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px'
@@ -684,19 +709,21 @@ function ParentDashboard() {
               )}
             </div>
 
-            {familyId && (
-              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                <EmergencyContacts familyId={familyId} editable={true} />
-              </div>
-            )}
-
+            {/* Account */}
             <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-              <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Legal</h3>
+              <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Account</h3>
+              <p style={{ margin: '0 0 4px 0', color: '#666', fontSize: '14px' }}>Logged in as <strong>{user.email}</strong></p>
+              <p style={{ margin: '0 0 12px 0', color: '#888', fontSize: '13px' }}>Name: {currentUserName}</p>
               <a href="/privacy-policy" style={{
-                display: 'block', padding: '12px', color: '#667eea',
+                display: 'block', padding: '12px', color: '#667eea', marginBottom: '8px',
                 textDecoration: 'none', fontSize: '14px', fontWeight: 'bold',
                 border: '2px solid #667eea', borderRadius: '10px', textAlign: 'center'
               }}>🔒 Privacy Policy</a>
+              <button onClick={handleLogout} style={{
+                width: '100%', padding: '12px', background: 'white', color: '#ff4444',
+                border: '2px solid #ff4444', borderRadius: '10px', fontWeight: 'bold',
+                cursor: 'pointer', fontSize: '14px'
+              }}>Log Out</button>
             </div>
           </div>
         )}

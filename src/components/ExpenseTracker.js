@@ -3,6 +3,8 @@ import { db, auth } from '../firebase';
 import { collection, addDoc, query, where, onSnapshot, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { createNotification } from '../services/NotificationService';
 
+const fmt = (n) => `$${Math.abs(n).toFixed(2)}`;
+
 const CATEGORIES = [
   { name: 'School', icon: '📚', color: '#667eea' },
   { name: 'Medical', icon: '🏥', color: '#4facfe' },
@@ -62,6 +64,27 @@ function ExpenseTracker({ familyId, linkedParentId, currentUserName }) {
   };
 
   const balance = getBalance();
+
+  const getBreakdown = () => {
+    if (!linkedParentId) return null;
+    let myTotal = 0, theirTotal = 0;
+    const byCategory = {};
+    expenses.filter(e => !e.settled).forEach(exp => {
+      if (exp.paidBy === user.uid) myTotal += exp.amount;
+      else theirTotal += exp.amount;
+      const key = exp.category;
+      if (!byCategory[key]) byCategory[key] = { icon: exp.categoryIcon, color: exp.categoryColor, mine: 0, theirs: 0 };
+      if (exp.paidBy === user.uid) byCategory[key].mine += exp.amount;
+      else byCategory[key].theirs += exp.amount;
+    });
+    return { myTotal, theirTotal, byCategory };
+  };
+
+  const breakdown = getBreakdown();
+
+  const settleOne = async (expenseId) => {
+    await updateDoc(doc(db, 'expenses', expenseId), { settled: true });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -167,51 +190,69 @@ function ExpenseTracker({ familyId, linkedParentId, currentUserName }) {
         </button>
       </div>
 
-      {/* Balance Summary */}
-      {balance !== null && (
-        <div style={{
-          background: balance > 0 ? 'rgba(52, 168, 83, 0.1)' : balance < 0 ? 'rgba(255, 107, 157, 0.1)' : 'rgba(102, 126, 234, 0.1)',
-          border: `2px solid ${balance > 0 ? '#34a853' : balance < 0 ? '#ff6b9d' : '#667eea'}`,
-          borderRadius: '10px',
-          padding: '16px',
-          marginBottom: '20px',
-          textAlign: 'center'
-        }}>
-          {balance === 0 ? (
-            <p style={{ margin: 0, fontWeight: 'bold', color: '#667eea', fontSize: '16px' }}>
-              ✅ All settled up!
-            </p>
-          ) : balance > 0 ? (
-            <>
-              <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#666' }}>Co-parent owes you</p>
-              <p style={{ margin: 0, fontWeight: 'bold', color: '#34a853', fontSize: '24px' }}>
-                ${balance.toFixed(2)}
-              </p>
-            </>
-          ) : (
-            <>
-              <p style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#666' }}>You owe co-parent</p>
-              <p style={{ margin: 0, fontWeight: 'bold', color: '#ff6b9d', fontSize: '24px' }}>
-                ${Math.abs(balance).toFixed(2)}
-              </p>
-            </>
+      {/* Settlement Summary */}
+      {balance !== null && breakdown && (
+        <div style={{ marginBottom: '20px' }}>
+          {/* Net balance */}
+          <div style={{
+            background: balance > 0 ? '#f0faf4' : balance < 0 ? '#fff0f6' : '#f0f4ff',
+            border: `2px solid ${balance > 0 ? '#34a853' : balance < 0 ? '#ff6b9d' : '#667eea'}`,
+            borderRadius: '12px', padding: '16px', textAlign: 'center', marginBottom: '12px'
+          }}>
+            {balance === 0 ? (
+              <p style={{ margin: 0, fontWeight: 'bold', color: '#667eea', fontSize: '16px' }}>✅ All settled up!</p>
+            ) : balance > 0 ? (
+              <>
+                <p style={{ margin: '0 0 2px 0', fontSize: '13px', color: '#666' }}>Co-parent owes you</p>
+                <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', color: '#34a853', fontSize: '28px' }}>{fmt(balance)}</p>
+              </>
+            ) : (
+              <>
+                <p style={{ margin: '0 0 2px 0', fontSize: '13px', color: '#666' }}>You owe co-parent</p>
+                <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', color: '#ff6b9d', fontSize: '28px' }}>{fmt(balance)}</p>
+              </>
+            )}
+            {/* Totals row */}
+            <div style={{ display: 'flex', justifyContent: 'space-around', borderTop: '1px solid #eee', paddingTop: '10px', marginTop: '4px' }}>
+              <div>
+                <div style={{ fontSize: '11px', color: '#888' }}>You paid</div>
+                <div style={{ fontWeight: 'bold', color: '#333', fontSize: '15px' }}>{fmt(breakdown.myTotal)}</div>
+              </div>
+              <div style={{ width: '1px', background: '#eee' }} />
+              <div>
+                <div style={{ fontSize: '11px', color: '#888' }}>Co-parent paid</div>
+                <div style={{ fontWeight: 'bold', color: '#333', fontSize: '15px' }}>{fmt(breakdown.theirTotal)}</div>
+              </div>
+              <div style={{ width: '1px', background: '#eee' }} />
+              <div>
+                <div style={{ fontSize: '11px', color: '#888' }}>Total</div>
+                <div style={{ fontWeight: 'bold', color: '#333', fontSize: '15px' }}>{fmt(breakdown.myTotal + breakdown.theirTotal)}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Category breakdown */}
+          {Object.keys(breakdown.byCategory).length > 0 && (
+            <div style={{ background: '#f8f9fa', borderRadius: '10px', padding: '12px', marginBottom: '12px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>By Category</div>
+              {Object.entries(breakdown.byCategory).map(([cat, data]) => (
+                <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '16px' }}>{data.icon}</span>
+                  <span style={{ flex: 1, fontSize: '13px', color: '#444' }}>{cat}</span>
+                  <span style={{ fontSize: '12px', color: '#34a853' }}>you {fmt(data.mine)}</span>
+                  <span style={{ fontSize: '11px', color: '#ccc' }}>·</span>
+                  <span style={{ fontSize: '12px', color: '#ff6b9d' }}>them {fmt(data.theirs)}</span>
+                </div>
+              ))}
+            </div>
           )}
+
           {unsettledExpenses.length > 0 && (
-            <button
-              onClick={settleAll}
-              style={{
-                marginTop: '10px',
-                padding: '6px 14px',
-                background: 'white',
-                border: '1px solid #ccc',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                color: '#666'
-              }}
-            >
-              Mark All Settled
-            </button>
+            <button onClick={settleAll} style={{
+              width: '100%', padding: '8px', background: 'white',
+              border: '1px solid #ddd', borderRadius: '8px',
+              cursor: 'pointer', fontSize: '13px', color: '#666', fontWeight: '600'
+            }}>✓ Mark All as Settled</button>
           )}
         </div>
       )}
@@ -408,23 +449,18 @@ function ExpenseTracker({ familyId, linkedParentId, currentUserName }) {
                     {exp.paidBy === user.uid ? `they owe $${(exp.amount / 2).toFixed(2)}` : `you owe $${(exp.amount / 2).toFixed(2)}`}
                   </div>
                 </div>
-                {exp.paidBy === user.uid && (
-                  <button
-                    onClick={() => deleteExpense(exp.id)}
-                    title="Delete"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: '#ccc',
-                      fontSize: '16px',
-                      padding: '4px',
-                      flexShrink: 0
-                    }}
-                  >
-                    ✕
-                  </button>
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
+                  <button onClick={() => settleOne(exp.id)} title="Mark settled" style={{
+                    background: '#f0faf4', border: '1px solid #34a853', borderRadius: '6px',
+                    cursor: 'pointer', color: '#34a853', fontSize: '11px', fontWeight: '600', padding: '3px 7px'
+                  }}>✓ Settle</button>
+                  {exp.paidBy === user.uid && (
+                    <button onClick={() => deleteExpense(exp.id)} title="Delete" style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: '#ccc', fontSize: '14px', padding: '2px'
+                    }}>✕</button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

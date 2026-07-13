@@ -324,9 +324,9 @@ function ChildDashboard() {
 
   const tabs = [
     { id: 'today', icon: '🏠', label: 'Today', badge: todayEvents.length },
-    { id: 'week', icon: '🗓️', label: 'Week' },
+    { id: 'week', icon: '🗓️', label: 'Schedule' },
     { id: 'pack', icon: '🎒', label: 'Pack' },
-    { id: 'messages', icon: '💬', label: 'Messages', badge: unreadMessages },
+    { id: 'messages', icon: '💬', label: 'Family', badge: unreadMessages },
     { id: 'more', icon: '⚙️', label: 'More' },
   ];
 
@@ -562,10 +562,7 @@ function ChildDashboard() {
 
         {/* PACK TAB */}
         {activeTab === 'pack' && (
-          <>
-            <PackList events={events} custodySchedule={custodySchedule} familyId={familyId} userId={user?.uid} />
-            <RoutineCards familyId={familyId} userId={user.uid} />
-          </>
+          <PackList events={events} custodySchedule={custodySchedule} familyId={familyId} userId={user?.uid} />
         )}
 
         {/* MESSAGES TAB */}
@@ -619,30 +616,44 @@ function ChildDashboard() {
         {/* MORE TAB */}
         {activeTab === 'more' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Routines */}
+            {familyId && (
+              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>🏠 Daily Routines</h3>
+                <RoutineCards familyId={familyId} userId={user.uid} />
+              </div>
+            )}
+
+            {/* Emergency Contacts */}
             {familyId && (
               <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
                 <EmergencyContacts familyId={familyId} editable={false} />
               </div>
             )}
-            <button onClick={() => setShowFamilySetup(true)} style={{
-              width: '100%', padding: '18px', background: 'white',
-              border: '2px solid #34a853', borderRadius: '16px',
-              color: '#34a853', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer'
-            }}>
-              🏠 {familyId ? 'Change Family Code' : 'Join Family'}
-            </button>
-            <button onClick={handleLogout} style={{
-              width: '100%', padding: '18px', background: 'white',
-              border: '2px solid #ff4444', borderRadius: '16px',
-              color: '#ff4444', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer'
-            }}>
-              🚪 Logout
-            </button>
-            <a href="/privacy-policy" style={{
-              display: 'block', padding: '14px', color: '#667eea',
-              textDecoration: 'none', fontSize: '14px', fontWeight: 'bold',
-              border: '2px solid #667eea', borderRadius: '14px', textAlign: 'center'
-            }}>🔒 Privacy Policy</a>
+
+            {/* Family & Account */}
+            <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Settings</h3>
+              <button onClick={() => setShowFamilySetup(true)} style={{
+                width: '100%', padding: '14px', marginBottom: '8px', background: 'white',
+                border: '2px solid #34a853', borderRadius: '12px',
+                color: '#34a853', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer'
+              }}>
+                🏠 {familyId ? 'Change Family Code' : 'Join Family'}
+              </button>
+              <a href="/privacy-policy" style={{
+                display: 'block', padding: '12px', marginBottom: '8px', color: '#667eea',
+                textDecoration: 'none', fontSize: '14px', fontWeight: 'bold',
+                border: '2px solid #667eea', borderRadius: '12px', textAlign: 'center'
+              }}>🔒 Privacy Policy</a>
+              <button onClick={handleLogout} style={{
+                width: '100%', padding: '14px', background: 'white',
+                border: '2px solid #ff4444', borderRadius: '12px',
+                color: '#ff4444', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer'
+              }}>
+                🚪 Logout
+              </button>
+            </div>
           </div>
         )}
       </div>
