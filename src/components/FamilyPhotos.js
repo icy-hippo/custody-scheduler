@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, addDoc, deleteDoc, doc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage, auth } from '../firebase';
 
 export default function FamilyPhotos({ familyId }) {
   const [photos, setPhotos] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -50,7 +51,30 @@ export default function FamilyPhotos({ familyId }) {
     }
   };
 
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this photo?')) return;
+    setDeleting(true);
+    try {
+      // Delete from Storage
+      try {
+        const storageRef = ref(storage, selectedPhoto.url);
+        await deleteObject(storageRef);
+      } catch (err) {
+        // Storage delete can fail if URL format differs; continue to delete Firestore doc
+      }
+      await deleteDoc(doc(db, 'familyPhotos', selectedPhoto.id));
+      setSelectedPhoto(null);
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Failed to delete photo.');
+    }
+    setDeleting(false);
+  };
+
   if (!familyId) return null;
+
+  const currentUser = auth.currentUser;
 
   return (
     <div style={{ marginTop: '24px' }}>
@@ -86,10 +110,7 @@ export default function FamilyPhotos({ familyId }) {
           <div>No photos yet. Add the first one!</div>
         </div>
       ) : (
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '8px',
-        }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
           {photos.map(photo => (
             <div
               key={photo.id}
@@ -121,7 +142,7 @@ export default function FamilyPhotos({ familyId }) {
           <img
             src={selectedPhoto.url}
             alt=""
-            style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: '12px', objectFit: 'contain' }}
+            style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: '12px', objectFit: 'contain' }}
           />
           <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', marginTop: '12px' }}>
             Shared by {selectedPhoto.uploadedByName}
@@ -129,6 +150,22 @@ export default function FamilyPhotos({ familyId }) {
           <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', marginTop: '4px' }}>
             Tap anywhere to close
           </div>
+
+          {/* Delete button — shown to the uploader */}
+          {currentUser && selectedPhoto.uploadedBy === currentUser.uid && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              style={{
+                marginTop: '20px', padding: '10px 24px',
+                background: deleting ? '#888' : '#ff4444',
+                color: 'white', border: 'none', borderRadius: '10px',
+                fontWeight: 'bold', fontSize: '14px', cursor: 'pointer',
+              }}
+            >
+              {deleting ? 'Deleting...' : '🗑 Delete Photo'}
+            </button>
+          )}
         </div>
       )}
     </div>
