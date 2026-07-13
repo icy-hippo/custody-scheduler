@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const CATEGORIES = [
   { key: 'doctor', label: 'Doctor', icon: '🏥' },
@@ -14,14 +14,15 @@ const EMPTY_CONTACT = { name: '', phone: '', notes: '' };
 
 export default function EmergencyContacts({ familyId, editable = false }) {
   const [contacts, setContacts] = useState({});
-  const [editing, setEditing] = useState(null); // category key being edited
+  const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY_CONTACT);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!familyId) return;
-    const unsub = onSnapshot(doc(db, 'emergencyContacts', familyId), snap => {
-      if (snap.exists()) setContacts(snap.data());
+    // Store contacts inside the families doc to reuse existing permissions
+    const unsub = onSnapshot(doc(db, 'families', familyId), snap => {
+      if (snap.exists()) setContacts(snap.data().emergencyContacts || {});
     });
     return unsub;
   }, [familyId]);
@@ -35,10 +36,10 @@ export default function EmergencyContacts({ familyId, editable = false }) {
     if (!familyId) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, 'emergencyContacts', familyId), {
-        ...contacts,
-        [editing]: form
-      }, { merge: true });
+      const updated = { ...contacts, [editing]: form };
+      await updateDoc(doc(db, 'families', familyId), {
+        emergencyContacts: updated
+      });
       setEditing(null);
     } catch (e) {
       console.error('Failed to save contact:', e);
@@ -50,7 +51,9 @@ export default function EmergencyContacts({ familyId, editable = false }) {
     if (!familyId) return;
     const updated = { ...contacts };
     delete updated[key];
-    await setDoc(doc(db, 'emergencyContacts', familyId), updated);
+    await updateDoc(doc(db, 'families', familyId), {
+      emergencyContacts: updated
+    });
   };
 
   return (
@@ -112,7 +115,6 @@ export default function EmergencyContacts({ familyId, editable = false }) {
         })}
       </div>
 
-      {/* Edit modal */}
       {editing && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
