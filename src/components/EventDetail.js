@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db, auth } from '../firebase';
 
 const BRING_SUGGESTIONS = {
   Sports: ['Sports uniform', 'Water bottle', 'Cleats / gear', 'Snack'],
@@ -24,10 +26,35 @@ function formatDate(dateStr) {
   });
 }
 
+const RSVP_OPTIONS = [
+  { value: 'yes', label: '✅ Going', color: '#34a853' },
+  { value: 'maybe', label: '🤔 Maybe', color: '#ffa500' },
+  { value: 'no', label: '❌ Can\'t go', color: '#ff4444' },
+];
+
 function EventDetail({ event, onClose, onEdit, onDelete }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [savingRsvp, setSavingRsvp] = useState(false);
 
   if (!event) return null;
+
+  const user = auth.currentUser;
+  const rsvp = event.rsvp || {};
+  const myRsvp = user ? rsvp[user.uid] : null;
+
+  const setRsvp = async (value) => {
+    if (!user) return;
+    setSavingRsvp(true);
+    try {
+      await updateDoc(doc(db, 'events', event.id), {
+        [`rsvp.${user.uid}`]: value,
+        [`rsvpNames.${user.uid}`]: user.displayName || 'A parent',
+      });
+    } catch (e) {
+      console.error('RSVP error:', e);
+    }
+    setSavingRsvp(false);
+  };
 
   const suggestions = BRING_SUGGESTIONS[event.category] || [];
 
@@ -103,6 +130,45 @@ function EventDetail({ event, onClose, onEdit, onDelete }) {
             </div>
           </div>
         )}
+
+        {/* RSVP */}
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontWeight: '700', color: '#333', marginBottom: '10px', fontSize: '15px' }}>
+            📋 Are you going?
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {RSVP_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setRsvp(opt.value)}
+                disabled={savingRsvp}
+                style={{
+                  flex: 1, padding: '10px 4px', borderRadius: '10px', fontWeight: '600',
+                  fontSize: '13px', cursor: 'pointer', border: `2px solid ${opt.color}`,
+                  background: myRsvp === opt.value ? opt.color : 'white',
+                  color: myRsvp === opt.value ? 'white' : opt.color,
+                  transition: 'all 0.15s'
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          {/* Show other family members' RSVPs */}
+          {Object.keys(rsvp).filter(uid => uid !== user?.uid).length > 0 && (
+            <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {Object.entries(rsvp).filter(([uid]) => uid !== user?.uid).map(([uid, val]) => {
+                const opt = RSVP_OPTIONS.find(o => o.value === val);
+                const name = (event.rsvpNames || {})[uid] || 'Co-parent';
+                return (
+                  <div key={uid} style={{ fontSize: '13px', color: '#666' }}>
+                    {opt?.label} — {name}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Actions */}
         {(onEdit || onDelete) && !confirmDelete && (

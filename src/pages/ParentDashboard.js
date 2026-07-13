@@ -539,12 +539,22 @@ function ParentDashboard() {
                           borderRadius: '10px', fontSize: '10px', fontWeight: 'bold', flexShrink: 0
                         }}>{event.category}</div>
                       </div>
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                         {event.isRecurring && (
                           <span style={{
                             background: '#667eea', color: 'white', padding: '3px 8px',
                             borderRadius: '10px', fontSize: '10px', fontWeight: 'bold'
                           }}>🔄 Recurring</span>
+                        )}
+                        {/* RSVP badge */}
+                        {event.rsvp && user && event.rsvp[user.uid] && (
+                          <span style={{
+                            padding: '3px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 'bold',
+                            background: event.rsvp[user.uid] === 'yes' ? '#34a853' : event.rsvp[user.uid] === 'maybe' ? '#ffa500' : '#ff4444',
+                            color: 'white'
+                          }}>
+                            {event.rsvp[user.uid] === 'yes' ? '✅ Going' : event.rsvp[user.uid] === 'maybe' ? '🤔 Maybe' : '❌ Not going'}
+                          </span>
                         )}
                         <button onClick={e => { e.stopPropagation(); openEditEvent(event.id); }} style={{
                           background: '#4facfe', color: 'white', border: 'none',
