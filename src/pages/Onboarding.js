@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { auth } from '../firebase';
 
 const PARENT_STEPS = [
@@ -101,7 +101,7 @@ function Onboarding() {
     try {
       const user = auth.currentUser;
       if (user) {
-        await updateDoc(doc(db, 'users', user.uid), { onboardingDone: true });
+        await setDoc(doc(db, 'users', user.uid), { onboardingDone: true }, { merge: true });
       }
     } catch (e) {}
     navigate(destination);
