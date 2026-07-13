@@ -132,5 +132,10 @@ service cloud.firestore {
       allow create: if sameFamily(request.resource.data.familyId)
         && request.resource.data.createdBy == request.auth.uid;
     }
+
+    match /emergencyContacts/{familyId} {
+      allow read: if sameFamily(familyId);
+      allow write: if sameFamily(familyId);
+    }
   }
 }
