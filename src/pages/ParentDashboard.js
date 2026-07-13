@@ -60,6 +60,7 @@ function ParentDashboard() {
   const [showRoutineSetup, setShowRoutineSetup] = useState(false);
   const [showChildInvite, setShowChildInvite] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [familySubTab, setFamilySubTab] = useState('chat');
 
   // Delete scope dialog state for recurring events
   const [showDeleteScopeDialog, setShowDeleteScopeDialog] = useState(false);
@@ -614,41 +615,108 @@ function ParentDashboard() {
 
         {/* FAMILY TAB */}
         {activeTab === 'family' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Section headers to separate content */}
-            <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-              <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>💬 Co-Parent Messages</h3>
-              <MessageThread
-                familyId={familyId}
-                linkedParentId={linkedParentId}
-                currentUserName={currentUserName}
-                fullPage
-              />
+          <div>
+            {/* Sub-tab toggle */}
+            <div style={{
+              display: 'flex', background: 'white', borderRadius: '14px',
+              padding: '4px', marginBottom: '16px',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.07)'
+            }}>
+              {[
+                { id: 'chat', label: '💬 Chat' },
+                { id: 'routines', label: '🏠 Routines' },
+                { id: 'contacts', label: '📋 Contacts' },
+                { id: 'photos', label: '📸 Photos' },
+              ].map(st => (
+                <button
+                  key={st.id}
+                  onClick={() => setFamilySubTab(st.id)}
+                  style={{
+                    flex: 1, padding: '10px 4px', borderRadius: '10px', border: 'none',
+                    fontWeight: '700', fontSize: '13px', cursor: 'pointer',
+                    background: familySubTab === st.id ? 'linear-gradient(135deg, #667eea, #9b59b6)' : 'transparent',
+                    color: familySubTab === st.id ? 'white' : '#888',
+                    boxShadow: familySubTab === st.id ? '0 3px 10px rgba(102,126,234,0.35)' : 'none',
+                    transition: 'all 0.2s'
+                  }}
+                >{st.label}</button>
+              ))}
             </div>
-            {familyId && (
-              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>👧 Child Messages</h3>
-                <ChildMessages
-                  familyId={familyId}
-                  userId={user?.uid}
-                  userName={currentUserName}
-                />
+
+            {/* Chat sub-tab */}
+            {familySubTab === 'chat' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+                  <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '15px', fontWeight: '700' }}>💬 Co-Parent Messages</h3>
+                  <MessageThread
+                    familyId={familyId}
+                    linkedParentId={linkedParentId}
+                    currentUserName={currentUserName}
+                    fullPage
+                  />
+                </div>
+                {familyId && (
+                  <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+                    <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '15px', fontWeight: '700' }}>👧 Child Messages</h3>
+                    <ChildMessages
+                      familyId={familyId}
+                      userId={user?.uid}
+                      userName={currentUserName}
+                    />
+                  </div>
+                )}
+                {familyId && (
+                  <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+                    <HandoffNotes
+                      familyId={familyId}
+                      currentUserName={currentUserName}
+                    />
+                  </div>
+                )}
+                {familyId && <FamilyMoodSummary familyId={familyId} />}
               </div>
             )}
-            {familyId && (
-              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                <HandoffNotes
-                  familyId={familyId}
-                  currentUserName={currentUserName}
-                />
+
+            {/* Routines sub-tab */}
+
+            {familySubTab === 'routines' && familyId && (
+              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                  <h3 style={{ margin: 0, color: '#333', fontSize: '15px', fontWeight: '700' }}>🏠 Daily Routines</h3>
+                  <button onClick={() => setShowRoutineSetup(true)} style={{
+                    padding: '7px 16px', background: 'linear-gradient(135deg, #667eea, #9b59b6)', color: 'white',
+                    border: 'none', borderRadius: '10px', fontWeight: '700',
+                    cursor: 'pointer', fontSize: '13px', boxShadow: '0 3px 10px rgba(102,126,234,0.3)'
+                  }}>+ Add</button>
+                </div>
+                <RoutineCards familyId={familyId} editable={true} />
               </div>
             )}
-            {familyId && (
-              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                <FamilyMoodSummary familyId={familyId} />
+            {familySubTab === 'routines' && !familyId && (
+              <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', color: '#aaa' }}>
+                <div style={{ fontSize: '40px', marginBottom: '10px' }}>🏠</div>
+                <div style={{ fontWeight: '600', color: '#666' }}>Set up your family first to add routines</div>
               </div>
             )}
-            <FamilyPhotos familyId={familyId} />
+
+            {/* Contacts sub-tab */}
+            {familySubTab === 'contacts' && (
+              familyId ? (
+                <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+                  <EmergencyContacts familyId={familyId} editable={true} />
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', color: '#aaa' }}>
+                  <div style={{ fontSize: '40px', marginBottom: '10px' }}>📋</div>
+                  <div style={{ fontWeight: '600', color: '#666' }}>Set up your family first to add contacts</div>
+                </div>
+              )
+            )}
+
+            {/* Photos sub-tab */}
+            {familySubTab === 'photos' && (
+              <FamilyPhotos familyId={familyId} />
+            )}
           </div>
         )}
 
@@ -671,28 +739,6 @@ function ParentDashboard() {
         {/* MORE TAB */}
         {activeTab === 'settings' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
-            {/* Routines */}
-            {familyId && (
-              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <h3 style={{ margin: 0, color: '#333', fontSize: '16px' }}>🏠 Daily Routines</h3>
-                  <button onClick={() => setShowRoutineSetup(true)} style={{
-                    padding: '6px 14px', background: '#667eea', color: 'white',
-                    border: 'none', borderRadius: '8px', fontWeight: 'bold',
-                    cursor: 'pointer', fontSize: '13px'
-                  }}>+ Add</button>
-                </div>
-                <RoutineCards familyId={familyId} editable={true} />
-              </div>
-            )}
-
-            {/* Emergency Contacts */}
-            {familyId && (
-              <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                <EmergencyContacts familyId={familyId} editable={true} />
-              </div>
-            )}
 
             {/* Family Setup */}
             <div style={{ background: 'white', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
