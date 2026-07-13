@@ -22,7 +22,9 @@ function Login() {
       
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        if (userData.role === 'parent') {
+        if (!userData.onboardingDone) {
+          navigate('/onboarding', { state: { role: userData.role } });
+        } else if (userData.role === 'parent') {
           navigate('/parent-dashboard');
         } else {
           navigate('/child-dashboard');
