@@ -58,6 +58,13 @@ function NotificationCenter({ userId }) {
     }
   };
 
+  const handleOpenPanel = async () => {
+    setShowPanel(true);
+    if (unreadCount > 0) {
+      await markAllNotificationsAsRead(userId);
+    }
+  };
+
   const handleNotificationClick = async (notificationId) => {
     await markNotificationAsRead(notificationId);
   };
@@ -75,7 +82,7 @@ function NotificationCenter({ userId }) {
     <div style={{ position: 'relative' }}>
       {/* Notification Bell Button */}
       <button
-        onClick={() => setShowPanel(!showPanel)}
+        onClick={() => showPanel ? setShowPanel(false) : handleOpenPanel()}
         style={{
           position: 'relative',
           background: 'none',
