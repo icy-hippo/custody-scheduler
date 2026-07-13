@@ -12,6 +12,7 @@ import VisualSchedule from '../components/VisualSchedule';
 import CustodyCalendar from '../components/CustodyCalendar';
 import BottomTabBar from '../components/BottomTabBar';
 import { scheduleAllNotifications } from '../services/LocalNotificationService';
+import { registerFCMToken } from '../services/FCMService';
 import { getCustodyStatus } from '../utils/custodySchedule';
 import ChildMessages from '../components/ChildMessages';
 import EventDetail from '../components/EventDetail';
@@ -41,6 +42,7 @@ function ChildDashboard() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
+        registerFCMToken();
       } else {
         navigate('/login');
       }
