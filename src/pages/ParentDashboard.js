@@ -26,7 +26,6 @@ import HandoffNotes from '../components/HandoffNotes';
 import FamilyPhotos from '../components/FamilyPhotos';
 import EventDetail from '../components/EventDetail';
 import EmergencyContacts from '../components/EmergencyContacts';
-import MoodCheckIn from '../components/MoodCheckIn';
 
 const localDateStr = (d = new Date()) => {
   const y = d.getFullYear();
@@ -440,7 +439,7 @@ function ParentDashboard() {
         {/* EVENTS TAB */}
         {activeTab === 'events' && (
           <div>
-            <MoodCheckIn userId={user?.uid} familyId={familyId} />
+            <FamilyMoodSummary familyId={familyId} />
             <button
               onClick={() => setShowAddEvent(true)}
               style={{
