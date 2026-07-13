@@ -52,7 +52,7 @@ service cloud.firestore {
     }
 
     match /custody/{userId} {
-      allow read: if isSelf(userId) || sameFamily(userDoc(userId).data.familyId);
+      allow read: if signedIn();
       allow write: if isSelf(userId);
     }
 
