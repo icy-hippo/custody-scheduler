@@ -1,4 +1,4 @@
-const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const functions = require('firebase-functions');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const { getMessaging } = require('firebase-admin/messaging');
@@ -7,7 +7,6 @@ initializeApp();
 
 const db = getFirestore();
 
-// Get FCM tokens for all family members except the sender
 async function getFamilyTokens(familyId, excludeUserId) {
   try {
     const familyDoc = await db.collection('families').doc(familyId).get();
@@ -30,7 +29,6 @@ async function getFamilyTokens(familyId, excludeUserId) {
   }
 }
 
-// Send FCM notification
 async function sendNotification(tokens, title, body) {
   if (!tokens.length) return;
   try {
@@ -46,55 +44,55 @@ async function sendNotification(tokens, title, body) {
   }
 }
 
-// Notify family when a new event is created
-exports.onEventCreated = onDocumentCreated('events/{eventId}', async (event) => {
-  const data = event.data.data();
-  if (!data.familyId || !data.createdBy) return;
+exports.onEventCreated = functions.firestore
+  .document('events/{eventId}')
+  .onCreate(async (snap) => {
+    const data = snap.data();
+    if (!data.familyId || !data.createdBy) return;
+    const tokens = await getFamilyTokens(data.familyId, data.createdBy);
+    const dateStr = data.date || '';
+    await sendNotification(
+      tokens,
+      `📅 New Event: ${data.title}`,
+      `${dateStr}${data.time ? ' at ' + data.time : ''}${data.location ? ' • ' + data.location : ''}`
+    );
+  });
 
-  const tokens = await getFamilyTokens(data.familyId, data.createdBy);
-  const dateStr = data.date || '';
-  await sendNotification(
-    tokens,
-    `📅 New Event: ${data.title}`,
-    `${dateStr}${data.time ? ' at ' + data.time : ''}${data.location ? ' • ' + data.location : ''}`
-  );
-});
+exports.onFamilyMessageCreated = functions.firestore
+  .document('familyMessages/{msgId}')
+  .onCreate(async (snap) => {
+    const data = snap.data();
+    if (!data.familyId || !data.senderId) return;
+    const tokens = await getFamilyTokens(data.familyId, data.senderId);
+    await sendNotification(
+      tokens,
+      `💬 ${data.senderName || 'Someone'} sent a message`,
+      data.text || ''
+    );
+  });
 
-// Notify family when a new family message is sent
-exports.onFamilyMessageCreated = onDocumentCreated('familyMessages/{msgId}', async (event) => {
-  const data = event.data.data();
-  if (!data.familyId || !data.senderId) return;
+exports.onMessageCreated = functions.firestore
+  .document('messages/{msgId}')
+  .onCreate(async (snap) => {
+    const data = snap.data();
+    if (!data.familyId || !data.senderId) return;
+    const tokens = await getFamilyTokens(data.familyId, data.senderId);
+    await sendNotification(
+      tokens,
+      `💬 ${data.senderName || 'Co-parent'} sent a message`,
+      data.text || ''
+    );
+  });
 
-  const tokens = await getFamilyTokens(data.familyId, data.senderId);
-  await sendNotification(
-    tokens,
-    `💬 ${data.senderName || 'Someone'} sent a message`,
-    data.text || ''
-  );
-});
-
-// Notify co-parent when a new co-parent message is sent
-exports.onMessageCreated = onDocumentCreated('messages/{msgId}', async (event) => {
-  const data = event.data.data();
-  if (!data.familyId || !data.senderId) return;
-
-  const tokens = await getFamilyTokens(data.familyId, data.senderId);
-  await sendNotification(
-    tokens,
-    `💬 ${data.senderName || 'Co-parent'} sent a message`,
-    data.text || ''
-  );
-});
-
-// Notify family when a handoff note is created
-exports.onHandoffNoteCreated = onDocumentCreated('handoffNotes/{noteId}', async (event) => {
-  const data = event.data.data();
-  if (!data.familyId || !data.createdBy) return;
-
-  const tokens = await getFamilyTokens(data.familyId, data.createdBy);
-  await sendNotification(
-    tokens,
-    `📋 New Handoff Note from ${data.createdByName || 'Co-parent'}`,
-    'Tap to view the handoff details'
-  );
-});
+exports.onHandoffNoteCreated = functions.firestore
+  .document('handoffNotes/{noteId}')
+  .onCreate(async (snap) => {
+    const data = snap.data();
+    if (!data.familyId || !data.createdBy) return;
+    const tokens = await getFamilyTokens(data.familyId, data.createdBy);
+    await sendNotification(
+      tokens,
+      `📋 New Handoff Note from ${data.createdByName || 'Co-parent'}`,
+      'Tap to view the handoff details'
+    );
+  });
