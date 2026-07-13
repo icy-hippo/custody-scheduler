@@ -20,6 +20,7 @@ import RoutineCards from '../components/RoutineCards';
 import FamilyMoodSummary from '../components/FamilyMoodSummary';
 import ChildInvite from '../components/ChildInvite';
 import { scheduleAllNotifications } from '../services/LocalNotificationService';
+import { registerFCMToken } from '../services/FCMService';
 import ChildMessages from '../components/ChildMessages';
 import HandoffNotes from '../components/HandoffNotes';
 import EventDetail from '../components/EventDetail';
@@ -68,6 +69,7 @@ function ParentDashboard() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
+        registerFCMToken();
       } else {
         navigate('/login');
       }
