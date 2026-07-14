@@ -334,7 +334,7 @@ function ChildDashboard() {
   };
 
   const tabs = [
-    { id: 'today', icon: '🏠', label: 'Today', badge: todayEvents.length },
+    { id: 'today', icon: '🏠', label: 'Today' },
     { id: 'week', icon: '🗓️', label: 'Schedule' },
     { id: 'pack', icon: '🎒', label: 'Pack' },
     { id: 'messages', icon: '💬', label: 'Chat', badge: unreadMessages },
