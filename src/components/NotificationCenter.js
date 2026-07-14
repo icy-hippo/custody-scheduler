@@ -58,24 +58,29 @@ function NotificationCenter({ userId }) {
     }
   };
 
-  const handleOpenPanel = async () => {
+  const handleOpenPanel = () => {
     setShowPanel(true);
     if (unreadCount > 0) {
-      await markAllNotificationsAsRead(userId);
+      // Optimistically mark all read in local state immediately
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      markAllNotificationsAsRead(userId);
     }
   };
 
-  const handleNotificationClick = async (notificationId) => {
-    await markNotificationAsRead(notificationId);
+  const handleNotificationClick = (notificationId) => {
+    setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, read: true } : n));
+    markNotificationAsRead(notificationId);
   };
 
-  const handleDeleteNotification = async (e, notificationId) => {
+  const handleDeleteNotification = (e, notificationId) => {
     e.stopPropagation();
-    await deleteNotification(notificationId);
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    deleteNotification(notificationId);
   };
 
-  const handleMarkAllAsRead = async () => {
-    await markAllNotificationsAsRead(userId);
+  const handleMarkAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    markAllNotificationsAsRead(userId);
   };
 
   return (
