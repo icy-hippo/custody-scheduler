@@ -60,7 +60,8 @@ function ParentDashboard() {
   const [showRoutineSetup, setShowRoutineSetup] = useState(false);
   const [showChildInvite, setShowChildInvite] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [familySubTab, setFamilySubTab] = useState('chat');
+  const [familySubTab, setFamilySubTab] = useState('handoff');
+  const [messagesSubTab, setMessagesSubTab] = useState('coparent');
 
   // Delete scope dialog state for recurring events
   const [showDeleteScopeDialog, setShowDeleteScopeDialog] = useState(false);
@@ -393,6 +394,7 @@ function ParentDashboard() {
   const tabs = [
     { id: 'events', icon: '📅', label: 'Events' },
     { id: 'calendar', icon: '🗓️', label: 'Calendar' },
+    { id: 'messages', icon: '💬', label: 'Messages' },
     { id: 'family', icon: '👨‍👩‍👧', label: 'Family' },
     { id: 'expenses', icon: '💰', label: 'Expenses' },
     { id: 'settings', icon: '⚙️', label: 'More' },
@@ -613,6 +615,63 @@ function ParentDashboard() {
           </div>
         )}
 
+        {/* MESSAGES TAB */}
+        {activeTab === 'messages' && (
+          <div>
+            {/* Sub-tab toggle */}
+            <div style={{
+              display: 'flex', background: 'white', borderRadius: '14px',
+              padding: '4px', marginBottom: '16px',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.07)'
+            }}>
+              {[
+                { id: 'coparent', label: '👥 Co-Parent' },
+                { id: 'family', label: '👨‍👩‍👧 Family Chat' },
+              ].map(st => (
+                <button
+                  key={st.id}
+                  onClick={() => setMessagesSubTab(st.id)}
+                  style={{
+                    flex: 1, padding: '10px 14px', borderRadius: '10px', border: 'none',
+                    fontWeight: '700', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
+                    background: messagesSubTab === st.id ? 'linear-gradient(135deg, #667eea, #9b59b6)' : 'transparent',
+                    color: messagesSubTab === st.id ? 'white' : '#888',
+                    boxShadow: messagesSubTab === st.id ? '0 3px 10px rgba(102,126,234,0.35)' : 'none',
+                    transition: 'all 0.2s'
+                  }}
+                >{st.label}</button>
+              ))}
+            </div>
+
+            {messagesSubTab === 'coparent' && (
+              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+                <MessageThread
+                  familyId={familyId}
+                  linkedParentId={linkedParentId}
+                  currentUserName={currentUserName}
+                  fullPage
+                />
+              </div>
+            )}
+
+            {messagesSubTab === 'family' && familyId && (
+              <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+                <ChildMessages
+                  familyId={familyId}
+                  userId={user?.uid}
+                  userName={currentUserName}
+                />
+              </div>
+            )}
+            {messagesSubTab === 'family' && !familyId && (
+              <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', color: '#aaa' }}>
+                <div style={{ fontSize: '40px', marginBottom: '10px' }}>👨‍👩‍👧</div>
+                <div style={{ fontWeight: '600', color: '#666' }}>Set up your family first to chat with children</div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* FAMILY TAB */}
         {activeTab === 'family' && (
           <div>
@@ -624,7 +683,6 @@ function ParentDashboard() {
               overflowX: 'auto', gap: '2px'
             }}>
               {[
-                { id: 'chat', label: '💬 Chat' },
                 { id: 'handoff', label: '🤝 Handoff' },
                 { id: 'routines', label: '🏠 Routines' },
                 { id: 'contacts', label: '📋 Contacts' },
@@ -644,31 +702,6 @@ function ParentDashboard() {
                 >{st.label}</button>
               ))}
             </div>
-
-            {/* Chat sub-tab */}
-            {familySubTab === 'chat' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
-                  <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '15px', fontWeight: '700' }}>💬 Co-Parent Messages</h3>
-                  <MessageThread
-                    familyId={familyId}
-                    linkedParentId={linkedParentId}
-                    currentUserName={currentUserName}
-                    fullPage
-                  />
-                </div>
-                {familyId && (
-                  <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
-                    <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '15px', fontWeight: '700' }}>👧 Child Messages</h3>
-                    <ChildMessages
-                      familyId={familyId}
-                      userId={user?.uid}
-                      userName={currentUserName}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Handoff sub-tab */}
             {familySubTab === 'handoff' && familyId && (
