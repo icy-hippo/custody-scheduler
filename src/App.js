@@ -127,6 +127,16 @@ function App() {
           <Route path="/child-dashboard" element={<ChildDashboard />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="*" element={
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', fontFamily: 'system-ui' }}>
+              <div style={{ background: 'white', borderRadius: '20px', padding: '40px', textAlign: 'center', maxWidth: '320px' }}>
+                <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔍</div>
+                <h2 style={{ margin: '0 0 8px', color: '#333' }}>Page not found</h2>
+                <p style={{ color: '#888', marginBottom: '20px' }}>This page doesn't exist.</p>
+                <a href="/" style={{ background: '#667eea', color: 'white', padding: '12px 24px', borderRadius: '10px', textDecoration: 'none', fontWeight: '700' }}>Go Home</a>
+              </div>
+            </div>
+          } />
         </Routes>
       </Router>
     </DarkModeProvider>
