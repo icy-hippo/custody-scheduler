@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { subscribeToNotifications, markNotificationAsRead, deleteNotification, markAllNotificationsAsRead } from '../services/NotificationService';
 import { useDarkMode } from '../context/DarkModeContext';
 
@@ -6,13 +6,20 @@ function NotificationCenter({ userId }) {
   const [notifications, setNotifications] = useState([]);
   const [showPanel, setShowPanel] = useState(false);
   const { darkMode } = useDarkMode();
+  // Track IDs we've already locally marked read/deleted so snapshot can't undo them
+  const localReadIds = useRef(new Set());
+  const localDeletedIds = useRef(new Set());
 
   // Subscribe to real-time notifications
   useEffect(() => {
     if (!userId) return;
 
     const unsubscribe = subscribeToNotifications(userId, (notifs) => {
-      setNotifications(notifs);
+      // Filter out locally deleted items; force-read locally marked ones
+      const merged = notifs
+        .filter(n => !localDeletedIds.current.has(n.id))
+        .map(n => localReadIds.current.has(n.id) ? { ...n, read: true } : n);
+      setNotifications(merged);
     });
 
     return () => unsubscribe();
@@ -61,24 +68,27 @@ function NotificationCenter({ userId }) {
   const handleOpenPanel = () => {
     setShowPanel(true);
     if (unreadCount > 0) {
-      // Optimistically mark all read in local state immediately
+      notifications.filter(n => !n.read).forEach(n => localReadIds.current.add(n.id));
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       markAllNotificationsAsRead(userId);
     }
   };
 
   const handleNotificationClick = (notificationId) => {
+    localReadIds.current.add(notificationId);
     setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, read: true } : n));
     markNotificationAsRead(notificationId);
   };
 
   const handleDeleteNotification = (e, notificationId) => {
     e.stopPropagation();
+    localDeletedIds.current.add(notificationId);
     setNotifications(prev => prev.filter(n => n.id !== notificationId));
     deleteNotification(notificationId);
   };
 
   const handleMarkAllAsRead = () => {
+    notifications.filter(n => !n.read).forEach(n => localReadIds.current.add(n.id));
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     markAllNotificationsAsRead(userId);
   };
