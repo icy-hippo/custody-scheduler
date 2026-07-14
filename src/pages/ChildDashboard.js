@@ -18,7 +18,6 @@ import FamilyPhotos from '../components/FamilyPhotos';
 import EventDetail from '../components/EventDetail';
 import MoodCheckIn from '../components/MoodCheckIn';
 import EmergencyContacts from '../components/EmergencyContacts';
-import RoutineSetup from '../components/RoutineSetup';
 
 const localDateStr = (d = new Date()) => {
   const y = d.getFullYear();
@@ -665,41 +664,6 @@ function ChildDashboard() {
                   <div style={{ fontWeight: '600', color: '#666' }}>Join a family to see contacts</div>
                 </div>
               )
-            )}
-          </div>
-        )}
-
-        {/* COMING UP TAB */}
-        {activeTab === 'upcoming' && (
-          <div style={{ background: 'white', borderRadius: '20px', padding: '20px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-            <h2 style={{ marginTop: 0, color: '#333', fontSize: '18px' }}>📆 Coming Up</h2>
-            {getDeduplicatedEvents().length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '32px', color: '#666' }}>
-                <p style={{ fontSize: '40px', margin: '0 0 12px 0' }}>📭</p>
-                <p style={{ margin: 0 }}>No upcoming events</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {getDeduplicatedEvents().map(event => (
-                  <div
-                    key={event.id}
-                    onClick={() => setSelectedEvent(event)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '12px',
-                      padding: '14px', background: `${event.color}15`,
-                      border: `2px solid ${event.color}`, borderRadius: '12px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <div style={{ fontSize: '32px' }}>{event.icon}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '15px', color: '#333' }}>{event.title}</div>
-                      <div style={{ color: '#666', fontSize: '12px', marginTop: '2px' }}>{formatDate(event.date)}</div>
-                    </div>
-                    <span style={{ fontSize: '18px', color: '#ccc' }}>›</span>
-                  </div>
-                ))}
-              </div>
             )}
           </div>
         )}
