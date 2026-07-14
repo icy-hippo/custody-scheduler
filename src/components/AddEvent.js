@@ -210,7 +210,7 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
         );
       }
 
-      // Notify children in the family
+      // Notify other family members (children) in the family
       if (familyId) {
         try {
           const familyDoc = await getDoc(doc(db, 'families', familyId));
@@ -218,8 +218,7 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
             const members = familyDoc.data().members || [];
             for (const memberId of members) {
               if (memberId === user.uid || memberId === linkedParentId) continue;
-              const memberDoc = await getDoc(doc(db, 'users', memberId));
-              if (memberDoc.exists() && memberDoc.data().role === 'child') {
+              try {
                 await createNotification(
                   memberId,
                   '📅 New Event!',
@@ -227,6 +226,8 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
                   'event_created',
                   { eventTitle: title, eventDate: date }
                 );
+              } catch (notifErr) {
+                // ignore per-member errors
               }
             }
           }

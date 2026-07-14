@@ -156,9 +156,8 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
           const members = familyDoc.data().members || [];
           for (const memberId of members) {
             if (memberId === user.uid || memberId === linkedParentId) continue;
-            const memberDoc = await getDoc(doc(db, 'users', memberId));
-            if (memberDoc.exists() && memberDoc.data().role === 'child') {
-              const dateFormatted = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            const dateFormatted = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            try {
               await createNotification(
                 memberId,
                 '📅 Something changed!',
@@ -166,6 +165,8 @@ function EditEvent({ eventId, onClose, onEventUpdated, linkedParentId }) {
                 'event_changed_child',
                 { eventTitle: title, eventDate: date }
               );
+            } catch (notifErr) {
+              // ignore per-member errors
             }
           }
         }
