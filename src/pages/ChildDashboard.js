@@ -498,7 +498,7 @@ function ChildDashboard() {
             })()}
             <MoodCheckIn userId={user?.uid} familyId={familyId} />
 
-            {nextEvent && (
+            {nextEvent && nextEvent.date !== localDateStr() && (
               <div
                 onClick={() => setSelectedEvent(nextEvent)}
                 style={{

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { db, auth } from '../firebase';
-import { collection, doc, getDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, writeBatch } from 'firebase/firestore';
 import { createNotification } from '../services/NotificationService';
 import { formatFriendlyDate, parseLocalDate } from '../utils/custodySchedule';
 
@@ -193,12 +193,14 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
       setDaysOfWeek([1]);
       setRecurrenceEndDate('');
 
-      // Notify co-parent about the new event
+      const friendlyDate = formatFriendlyDate(date);
+      const count = eventsToAdd.length;
+      const notifMsg = count === 1
+        ? `${userName} added "${title}" on ${friendlyDate}`
+        : `${userName} added "${title}" as a recurring event (${count} instances)`;
+
+      // Notify co-parent
       if (linkedParentId) {
-        const count = eventsToAdd.length;
-        const notifMsg = count === 1
-          ? `${userName} added "${title}" on ${formatFriendlyDate(date)}`
-          : `${userName} added "${title}" as a recurring event (${count} instances)`;
         await createNotification(
           linkedParentId,
           'New Event Added',
@@ -208,10 +210,35 @@ function AddEvent({ onClose, onEventAdded, linkedParentId }) {
         );
       }
 
+      // Notify other family members (children) in the family
+      if (familyId) {
+        try {
+          const familyDoc = await getDoc(doc(db, 'families', familyId));
+          if (familyDoc.exists()) {
+            const members = familyDoc.data().members || [];
+            for (const memberId of members) {
+              if (memberId === user.uid || memberId === linkedParentId) continue;
+              try {
+                await createNotification(
+                  memberId,
+                  '📅 New Event!',
+                  `${userName} added "${title}" on ${friendlyDate}`,
+                  'event_created',
+                  { eventTitle: title, eventDate: date }
+                );
+              } catch (notifErr) {
+                // ignore per-member errors
+              }
+            }
+          }
+        } catch (e) {
+          // silently ignore permission errors
+        }
+      }
+
       if (onEventAdded) onEventAdded();
       if (onClose) onClose();
 
-      const count = eventsToAdd.length;
       const message = count === 1 ? 'Event added successfully!' : `${count} recurring events added successfully!`;
       alert(message);
     } catch (err) {
