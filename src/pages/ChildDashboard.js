@@ -574,19 +574,20 @@ function ChildDashboard() {
               display: 'flex', background: '#f0f0f0', borderRadius: '12px',
               padding: '4px', marginBottom: '16px'
             }}>
-              {[{ id: 'week', label: '📅 Week' }, { id: 'month', label: '🗓️ Month' }].map(v => (
+              {[{ id: 'week', icon: '📅', label: 'Week' }, { id: 'month', icon: '🗓️', label: 'Month' }].map(v => (
                 <button
                   key={v.id}
                   onClick={() => switchScheduleView(v.id)}
+                  title={v.label}
                   style={{
                     flex: 1, padding: '10px', borderRadius: '9px', border: 'none',
-                    fontWeight: '700', fontSize: '14px', cursor: 'pointer',
+                    cursor: 'pointer',
                     background: scheduleView === v.id ? 'white' : 'transparent',
-                    color: scheduleView === v.id ? '#333' : '#888',
                     boxShadow: scheduleView === v.id ? '0 2px 8px rgba(0,0,0,0.12)' : 'none',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    fontSize: scheduleView === v.id ? '26px' : '22px',
                   }}
-                >{v.label}</button>
+                >{v.icon}</button>
               ))}
             </div>
 
@@ -625,22 +626,23 @@ function ChildDashboard() {
               overflowX: 'auto', gap: '2px'
             }}>
               {[
-                { id: 'photos', label: '📸 Photos' },
-                { id: 'routines', label: '🏠 Routines' },
-                { id: 'contacts', label: '📋 Contacts' },
+                { id: 'photos', icon: '📸', label: 'Photos' },
+                { id: 'routines', icon: '🏠', label: 'Routines' },
+                { id: 'contacts', icon: '📋', label: 'Contacts' },
               ].map(st => (
                 <button
                   key={st.id}
                   onClick={() => setFamilySubTab(st.id)}
+                  title={st.label}
                   style={{
-                    flexShrink: 0, padding: '10px 14px', borderRadius: '10px', border: 'none',
-                    fontWeight: '700', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
+                    flex: 1, padding: '10px 8px', borderRadius: '10px', border: 'none',
+                    cursor: 'pointer',
                     background: familySubTab === st.id ? 'linear-gradient(135deg, #f093fb, #4facfe)' : 'transparent',
-                    color: familySubTab === st.id ? 'white' : '#888',
                     boxShadow: familySubTab === st.id ? '0 3px 10px rgba(240,147,251,0.35)' : 'none',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    fontSize: familySubTab === st.id ? '26px' : '22px',
                   }}
-                >{st.label}</button>
+                >{st.icon}</button>
               ))}
             </div>
 
