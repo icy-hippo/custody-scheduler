@@ -60,13 +60,17 @@ function PackList({ events, custodySchedule, familyId, userId }) {
       { id: 'toiletries', name: 'Toiletries (toothbrush, etc.)', icon: '🧴' },
     ];
 
+    const seen = new Set();
     upcomingEvents.forEach(event => {
       if (event.category === 'Sports') {
-        items.push({ id: `sports-${event.id}`, name: `Sports gear for ${event.title}`, icon: '⚽', eventBased: true });
+        const key = `sports-${event.title}`;
+        if (!seen.has(key)) { seen.add(key); items.push({ id: key, name: `Sports gear for ${event.title}`, icon: '⚽', eventBased: true }); }
       } else if (event.category === 'School') {
-        items.push({ id: `school-${event.id}`, name: `Materials for ${event.title}`, icon: '📖', eventBased: true });
+        const key = `school-${event.title}`;
+        if (!seen.has(key)) { seen.add(key); items.push({ id: key, name: `Materials for ${event.title}`, icon: '📖', eventBased: true }); }
       } else if (event.category === 'Medical') {
-        items.push({ id: `medical-${event.id}`, name: 'Medications/medical supplies', icon: '💊', eventBased: true });
+        const key = 'medical';
+        if (!seen.has(key)) { seen.add(key); items.push({ id: key, name: 'Medications/medical supplies', icon: '💊', eventBased: true }); }
       }
     });
 
