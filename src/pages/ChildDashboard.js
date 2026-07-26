@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
-import { signOut, onAuthStateChanged } from 'firebase/auth';
+import { signOut, onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
 import PackList from '../components/PackList';
@@ -362,6 +362,27 @@ function ChildDashboard() {
       paddingBottom: '72px',
       fontFamily: 'system-ui'
     }}>
+      {/* Email verification banner */}
+      {user && !user.emailVerified && (
+        <div style={{
+          background: '#fff8e1', borderBottom: '1px solid #ffe082',
+          padding: '10px 20px', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', gap: '10px', flexWrap: 'wrap'
+        }}>
+          <span style={{ fontSize: '13px', color: '#7c5c00' }}>
+            ✉️ Please verify your email address to secure your account.
+          </span>
+          <button
+            onClick={async () => { await sendEmailVerification(user); alert('Verification email sent!'); }}
+            style={{
+              background: '#ffa000', color: 'white', border: 'none',
+              borderRadius: '6px', padding: '4px 12px', fontSize: '12px',
+              fontWeight: 'bold', cursor: 'pointer'
+            }}
+          >Resend Email</button>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{
         background: 'linear-gradient(135deg, #f093fb 0%, #4facfe 100%)',
@@ -676,13 +697,24 @@ function ChildDashboard() {
             {/* Family & Account */}
             <div style={{ background: 'white', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
               <h3 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '16px' }}>Settings</h3>
-              <button onClick={() => setShowFamilySetup(true)} style={{
-                width: '100%', padding: '14px', marginBottom: '8px', background: 'white',
-                border: '2px solid #34a853', borderRadius: '12px',
-                color: '#34a853', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer'
-              }}>
-                🏠 {familyId ? 'Change Family Code' : 'Join Family'}
-              </button>
+              {familyId ? (
+                <div style={{
+                  width: '100%', padding: '14px', marginBottom: '8px', background: '#f0faf4',
+                  border: '2px solid #34a853', borderRadius: '12px', boxSizing: 'border-box',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '12px', color: '#34a853', fontWeight: '700', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Family Code</div>
+                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#333', letterSpacing: '4px' }}>{familyId}</div>
+                </div>
+              ) : (
+                <button onClick={() => setShowFamilySetup(true)} style={{
+                  width: '100%', padding: '14px', marginBottom: '8px', background: 'white',
+                  border: '2px solid #34a853', borderRadius: '12px',
+                  color: '#34a853', fontWeight: 'bold', fontSize: '15px', cursor: 'pointer'
+                }}>
+                  🏠 Join Family
+                </button>
+              )}
               <a href="/privacy-policy" style={{
                 display: 'block', padding: '12px', marginBottom: '8px', color: '#667eea',
                 textDecoration: 'none', fontSize: '14px', fontWeight: 'bold',

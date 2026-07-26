@@ -19,6 +19,7 @@ function ExpenseTracker({ familyId, linkedParentId, currentUserName }) {
   const [expenses, setExpenses] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [showSettled, setShowSettled] = useState(false);
 
   // Form state
   const [description, setDescription] = useState('');
@@ -487,11 +488,45 @@ function ExpenseTracker({ familyId, linkedParentId, currentUserName }) {
         </>
       )}
 
-      {/* Settled expenses count */}
+      {/* Settled expenses */}
       {settledExpenses.length > 0 && (
-        <p style={{ margin: '16px 0 0 0', fontSize: '12px', color: '#999', textAlign: 'center' }}>
-          {settledExpenses.length} settled expense{settledExpenses.length !== 1 ? 's' : ''} hidden
-        </p>
+        <div style={{ marginTop: '16px' }}>
+          <button
+            onClick={() => setShowSettled(s => !s)}
+            style={{
+              width: '100%', padding: '8px', background: 'none',
+              border: '1px solid #ddd', borderRadius: '8px',
+              cursor: 'pointer', color: '#999', fontSize: '13px', fontWeight: '600'
+            }}
+          >
+            {showSettled ? '▲ Hide' : '▼ Show'} {settledExpenses.length} settled expense{settledExpenses.length !== 1 ? 's' : ''}
+          </button>
+          {showSettled && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px', opacity: 0.6 }}>
+              {settledExpenses.map(exp => (
+                <div key={exp.id} style={{
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  padding: '10px 12px', background: '#f8f9fa',
+                  borderRadius: '8px', border: '1px solid #eee'
+                }}>
+                  <span style={{ fontSize: '18px' }}>{exp.categoryIcon}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: '600', fontSize: '13px', color: '#888', textDecoration: 'line-through' }}>
+                      {exp.description || exp.category}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#bbb' }}>
+                      {formatDate(exp.date)} · ${exp.amount.toFixed(2)} · Settled
+                    </div>
+                  </div>
+                  <button onClick={() => deleteExpense(exp.id)} style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#ccc', fontSize: '14px', padding: '2px', flexShrink: 0
+                  }}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
