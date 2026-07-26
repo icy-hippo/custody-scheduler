@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
-import { signOut, onAuthStateChanged } from 'firebase/auth';
+import { signOut, onAuthStateChanged, sendEmailVerification } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
 import PackList from '../components/PackList';
@@ -362,6 +362,27 @@ function ChildDashboard() {
       paddingBottom: '72px',
       fontFamily: 'system-ui'
     }}>
+      {/* Email verification banner */}
+      {user && !user.emailVerified && (
+        <div style={{
+          background: '#fff8e1', borderBottom: '1px solid #ffe082',
+          padding: '10px 20px', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', gap: '10px', flexWrap: 'wrap'
+        }}>
+          <span style={{ fontSize: '13px', color: '#7c5c00' }}>
+            ✉️ Please verify your email address to secure your account.
+          </span>
+          <button
+            onClick={async () => { await sendEmailVerification(user); alert('Verification email sent!'); }}
+            style={{
+              background: '#ffa000', color: 'white', border: 'none',
+              borderRadius: '6px', padding: '4px 12px', fontSize: '12px',
+              fontWeight: 'bold', cursor: 'pointer'
+            }}
+          >Resend Email</button>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{
         background: 'linear-gradient(135deg, #f093fb 0%, #4facfe 100%)',
