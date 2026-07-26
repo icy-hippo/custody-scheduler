@@ -340,8 +340,9 @@ function ParentDashboard() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(event =>
-        event.title.toLowerCase().includes(term) ||
-        (event.location && event.location.toLowerCase().includes(term))
+        (event.title && event.title.toLowerCase().includes(term)) ||
+        (event.location && event.location.toLowerCase().includes(term)) ||
+        (event.category && event.category.toLowerCase().includes(term))
       );
     }
 
@@ -392,7 +393,7 @@ function ParentDashboard() {
   }
 
   const tabs = [
-    { id: 'events', icon: '📅', label: 'Events' },
+    { id: 'events', icon: '🏠', label: 'Events' },
     { id: 'calendar', icon: '🗓️', label: 'Calendar' },
     { id: 'messages', icon: '💬', label: 'Messages' },
     { id: 'family', icon: '👨‍👩‍👧', label: 'Family' },
