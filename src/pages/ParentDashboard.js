@@ -625,21 +625,22 @@ function ParentDashboard() {
               boxShadow: '0 2px 12px rgba(0,0,0,0.07)'
             }}>
               {[
-                { id: 'coparent', label: '👥 Co-Parent' },
-                { id: 'family', label: '👨‍👩‍👧 Family Chat' },
+                { id: 'coparent', icon: '👥', label: 'Co-Parent' },
+                { id: 'family', icon: '👨‍👩‍👧', label: 'Family Chat' },
               ].map(st => (
                 <button
                   key={st.id}
                   onClick={() => setMessagesSubTab(st.id)}
+                  title={st.label}
                   style={{
                     flex: 1, padding: '10px 14px', borderRadius: '10px', border: 'none',
-                    fontWeight: '700', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
+                    cursor: 'pointer',
                     background: messagesSubTab === st.id ? 'linear-gradient(135deg, #667eea, #9b59b6)' : 'transparent',
-                    color: messagesSubTab === st.id ? 'white' : '#888',
                     boxShadow: messagesSubTab === st.id ? '0 3px 10px rgba(102,126,234,0.35)' : 'none',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    fontSize: messagesSubTab === st.id ? '26px' : '22px',
                   }}
-                >{st.label}</button>
+                >{st.icon}</button>
               ))}
             </div>
 
@@ -683,23 +684,24 @@ function ParentDashboard() {
               overflowX: 'auto', gap: '2px'
             }}>
               {[
-                { id: 'handoff', label: '🤝 Handoff' },
-                { id: 'routines', label: '🏠 Routines' },
-                { id: 'contacts', label: '📋 Contacts' },
-                { id: 'photos', label: '📸 Photos' },
+                { id: 'handoff', icon: '🤝', label: 'Handoff' },
+                { id: 'routines', icon: '🏠', label: 'Routines' },
+                { id: 'contacts', icon: '📋', label: 'Contacts' },
+                { id: 'photos', icon: '📸', label: 'Photos' },
               ].map(st => (
                 <button
                   key={st.id}
                   onClick={() => setFamilySubTab(st.id)}
+                  title={st.label}
                   style={{
-                    flexShrink: 0, padding: '10px 14px', borderRadius: '10px', border: 'none',
-                    fontWeight: '700', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap',
+                    flex: 1, padding: '10px 8px', borderRadius: '10px', border: 'none',
+                    cursor: 'pointer',
                     background: familySubTab === st.id ? 'linear-gradient(135deg, #667eea, #9b59b6)' : 'transparent',
-                    color: familySubTab === st.id ? 'white' : '#888',
                     boxShadow: familySubTab === st.id ? '0 3px 10px rgba(102,126,234,0.35)' : 'none',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    fontSize: familySubTab === st.id ? '26px' : '22px',
                   }}
-                >{st.label}</button>
+                >{st.icon}</button>
               ))}
             </div>
 

@@ -5,7 +5,7 @@ function BottomTabBar({ tabs, activeTab, onTabChange }) {
       bottom: 0,
       left: 0,
       right: 0,
-      height: '68px',
+      height: '64px',
       background: 'white',
       borderTop: '1px solid #f0f0f0',
       display: 'flex',
@@ -24,7 +24,6 @@ function BottomTabBar({ tabs, activeTab, onTabChange }) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '2px',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
@@ -36,8 +35,8 @@ function BottomTabBar({ tabs, activeTab, onTabChange }) {
             {tab.badge > 0 && (
               <div style={{
                 position: 'absolute',
-                top: '4px',
-                right: 'calc(50% - 20px)',
+                top: '6px',
+                right: 'calc(50% - 22px)',
                 background: '#ff4444',
                 color: 'white',
                 borderRadius: '10px',
@@ -57,28 +56,18 @@ function BottomTabBar({ tabs, activeTab, onTabChange }) {
 
             {/* Icon with pill background when active */}
             <div style={{
-              width: '44px',
-              height: '26px',
-              borderRadius: '13px',
+              width: '52px',
+              height: '32px',
+              borderRadius: '16px',
               background: isActive ? '#667eea18' : 'transparent',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'background 0.2s',
-              fontSize: isActive ? '22px' : '20px',
+              fontSize: isActive ? '28px' : '24px',
             }}>
               {tab.icon}
             </div>
-
-            <span style={{
-              fontSize: '10px',
-              fontWeight: isActive ? '700' : '500',
-              color: isActive ? '#667eea' : '#b0b0b0',
-              letterSpacing: '0.2px',
-              transition: 'color 0.2s'
-            }}>
-              {tab.label}
-            </span>
           </button>
         );
       })}
