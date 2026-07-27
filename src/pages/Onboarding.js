@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth } from '../firebase';
+import { sendEmailVerification } from 'firebase/auth';
 
 const PARENT_STEPS = [
   {
@@ -85,11 +86,131 @@ const CHILD_STEPS = [
   },
 ];
 
+function EmailVerifyStep({ onVerified, onSkip }) {
+  const user = auth.currentUser;
+  const [checking, setChecking] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(false);
+  const [resendMsg, setResendMsg] = useState('');
+
+  const checkVerification = async () => {
+    setChecking(true);
+    try {
+      await user.reload();
+      if (auth.currentUser.emailVerified) {
+        setVerified(true);
+        setTimeout(onVerified, 1000);
+      } else {
+        setResendMsg("Not verified yet — check your inbox and spam folder, then try again.");
+      }
+    } catch (e) {}
+    setChecking(false);
+  };
+
+  const resend = async () => {
+    if (resendCooldown) return;
+    try {
+      await sendEmailVerification(auth.currentUser);
+      setResendMsg('Email sent! Check your inbox and spam folder.');
+      setResendCooldown(true);
+      setTimeout(() => setResendCooldown(false), 30000);
+    } catch (e) {
+      setResendMsg('Could not send email. Please try again later.');
+    }
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh', background: '#f0f4ff',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'space-between',
+      padding: '48px 24px 40px', fontFamily: 'system-ui'
+    }}>
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={onSkip} style={{ background: 'none', border: 'none', color: '#999', fontSize: '15px', cursor: 'pointer', fontWeight: '500' }}>
+          Skip
+        </button>
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', maxWidth: '360px' }}>
+        <div style={{
+          width: '120px', height: '120px', borderRadius: '36px', background: 'white',
+          boxShadow: '0 12px 40px #667eea33', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', fontSize: '60px', marginBottom: '36px', border: '3px solid #667eea22'
+        }}>
+          {verified ? '✅' : '📧'}
+        </div>
+
+        <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#222', margin: '0 0 16px 0', lineHeight: 1.3 }}>
+          {verified ? 'Email Verified!' : 'Verify Your Email'}
+        </h1>
+
+        {!verified && (
+          <>
+            <p style={{ fontSize: '16px', color: '#555', lineHeight: 1.7, margin: '0 0 8px 0' }}>
+              We sent a verification link to
+            </p>
+            <p style={{ fontSize: '15px', fontWeight: 'bold', color: '#667eea', margin: '0 0 20px 0' }}>
+              {user?.email}
+            </p>
+            <div style={{
+              background: '#fff8e1', border: '2px solid #ffe082', borderRadius: '14px',
+              padding: '12px 16px', fontSize: '13px', color: '#7c5c00', fontWeight: '600',
+              marginBottom: '20px', lineHeight: 1.6
+            }}>
+              📂 Can't find it? Check your <strong>spam or junk folder</strong> — verification emails sometimes land there.
+            </div>
+          </>
+        )}
+
+        {verified && (
+          <p style={{ fontSize: '16px', color: '#555', lineHeight: 1.7, margin: '0 0 20px 0' }}>
+            Your account is verified. Let's set things up!
+          </p>
+        )}
+
+        {resendMsg && (
+          <p style={{ fontSize: '13px', color: '#667eea', margin: '0 0 16px 0', fontWeight: '600' }}>
+            {resendMsg}
+          </p>
+        )}
+      </div>
+
+      <div style={{ width: '100%', maxWidth: '360px' }}>
+        {!verified && (
+          <>
+            <button onClick={checkVerification} disabled={checking} style={{
+              width: '100%', padding: '18px', background: checking ? '#aaa' : '#667eea',
+              color: 'white', border: 'none', borderRadius: '16px',
+              fontSize: '17px', fontWeight: '700', cursor: checking ? 'default' : 'pointer',
+              boxShadow: '0 6px 20px #667eea44', marginBottom: '12px'
+            }}>
+              {checking ? 'Checking…' : "I've Verified My Email ✓"}
+            </button>
+            <button onClick={resend} disabled={resendCooldown} style={{
+              width: '100%', padding: '14px', background: 'white',
+              color: resendCooldown ? '#bbb' : '#667eea',
+              border: `2px solid ${resendCooldown ? '#ddd' : '#667eea'}`,
+              borderRadius: '16px', fontSize: '15px', fontWeight: '600',
+              cursor: resendCooldown ? 'default' : 'pointer'
+            }}>
+              {resendCooldown ? '✓ Email sent!' : 'Resend verification email'}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Onboarding() {
   const navigate = useNavigate();
   const location = useLocation();
   const role = location.state?.role || 'parent';
   const destination = role === 'parent' ? '/parent-dashboard' : '/child-dashboard';
+
+  const user = auth.currentUser;
+  const [emailVerified, setEmailVerified] = useState(user?.emailVerified ?? true);
 
   const steps = role === 'parent' ? PARENT_STEPS : CHILD_STEPS;
   const [step, setStep] = useState(0);
@@ -111,6 +232,15 @@ function Onboarding() {
     if (isLast) finish();
     else setStep(s => s + 1);
   };
+
+  if (!emailVerified) {
+    return (
+      <EmailVerifyStep
+        onVerified={() => setEmailVerified(true)}
+        onSkip={() => setEmailVerified(true)}
+      />
+    );
+  }
 
   return (
     <div style={{
