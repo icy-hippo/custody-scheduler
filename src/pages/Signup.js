@@ -70,9 +70,16 @@ function Signup() {
           <p style={{ color: '#667eea', fontWeight: 'bold', fontSize: '15px', margin: '0 0 24px 0' }}>
             {email}
           </p>
-          <p style={{ color: '#888', fontSize: '13px', margin: '0 0 28px 0', lineHeight: '1.6' }}>
+          <p style={{ color: '#888', fontSize: '13px', margin: '0 0 16px 0', lineHeight: '1.6' }}>
             Click the link in the email to verify your account, then come back and continue setting up your profile.
           </p>
+          <div style={{
+            background: '#fff8e1', border: '2px solid #ffe082', borderRadius: '10px',
+            padding: '10px 14px', fontSize: '13px', color: '#7c5c00',
+            fontWeight: '600', marginBottom: '20px', lineHeight: '1.6'
+          }}>
+            📂 Can't find it? Check your <strong>spam or junk folder</strong> — verification emails sometimes land there.
+          </div>
 
           <button
             onClick={() => navigate('/profile-setup')}
