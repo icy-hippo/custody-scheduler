@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { db, auth } from '../firebase';
-import { collection, doc, getDoc, getDocs, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDoc, writeBatch } from 'firebase/firestore';
 import { createNotification } from '../services/NotificationService';
 import { formatFriendlyDate, parseLocalDate } from '../utils/custodySchedule';
 

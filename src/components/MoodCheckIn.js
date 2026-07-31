@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db, auth } from '../firebase';
+import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const MOODS = [
