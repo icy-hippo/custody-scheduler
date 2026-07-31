@@ -67,7 +67,7 @@ function ChildInvite({ familyId, onClose }) {
         }}>
           <strong style={{ color: '#555' }}>Instructions for your child:</strong>
           <ol style={{ margin: '8px 0 0 0', paddingLeft: '18px', lineHeight: '1.8' }}>
-            <li>Open HarmonyHub and log in</li>
+            <li>Open Kinnect and log in</li>
             <li>Go to the <strong>More</strong> tab</li>
             <li>Tap <strong>Join Family</strong></li>
             <li>Enter the code above</li>

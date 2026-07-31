@@ -20,7 +20,7 @@ function CalendarExport({ events, custodySchedule }) {
       const eventsIcal = generateEventsIcal(events, 'Family Events');
       const custodyIcal = generateCustodyIcal(custodySchedule, 12);
       icalContent = eventsIcal + '\n' + custodyIcal;
-      filename = `harmonyhub-calendar-${new Date().toISOString().split('T')[0]}.ics`;
+      filename = `kinnect-calendar-${new Date().toISOString().split('T')[0]}.ics`;
     }
 
     downloadIcalFile(icalContent, filename);

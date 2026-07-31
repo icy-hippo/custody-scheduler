@@ -55,7 +55,7 @@ function Login() {
         maxWidth: '400px'
       }}>
         <h2 style={{ marginBottom: '24px', color: '#333', textAlign: 'center' }}>
-          Login to HarmonyHub
+          Login to Kinnect
         </h2>
 
         <form onSubmit={handleLogin}>

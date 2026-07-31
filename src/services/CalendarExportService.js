@@ -6,7 +6,7 @@ import { formatDateKey, getParentForDate, parseLocalDate } from '../utils/custod
 
 // Generate a unique UID for each event
 const generateUID = () => {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}@harmonyhub.local`;
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}@kinnect.local`;
 };
 
 // Format date/time for iCal format (YYYYMMDDTHHMMSS)
@@ -56,7 +56,7 @@ export const generateEventsIcal = (events, familyName = 'Family Schedule') => {
 
   let ical = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//HarmonyHub//Custody Scheduler//EN
+PRODID:-//Kinnect//Custody Scheduler//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:${escapeIcalText(familyName)}
@@ -111,7 +111,7 @@ export const generateCustodyIcal = (custodySchedule, monthsToGenerate = 12) => {
 
   let ical = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//HarmonyHub//Custody Schedule//EN
+PRODID:-//Kinnect//Custody Schedule//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Custody Schedule

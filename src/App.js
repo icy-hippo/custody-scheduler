@@ -24,7 +24,7 @@ function Home() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', color: 'white', marginBottom: '60px' }}>
           <h1 style={{ fontSize: '48px', marginBottom: '16px' }}>
-            HarmonyHub
+            Kinnect
           </h1>
           <p style={{ fontSize: '20px', opacity: 0.9 }}>
             A Shared Scheduler for Divorced Families

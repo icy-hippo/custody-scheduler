@@ -45,7 +45,7 @@ function PrivacyPolicy() {
           </button>
           <div>
             <h1 style={{ margin: 0, fontSize: '24px' }}>Privacy Policy</h1>
-            <p style={{ margin: '4px 0 0 0', opacity: 0.85, fontSize: '14px' }}>HarmonyHub — Last updated July 6, 2026</p>
+            <p style={{ margin: '4px 0 0 0', opacity: 0.85, fontSize: '14px' }}>Kinnect — Last updated July 6, 2026</p>
           </div>
         </div>
       </div>
@@ -54,12 +54,12 @@ function PrivacyPolicy() {
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '32px 24px' }}>
 
         {section('Overview', <>
-          {p('HarmonyHub ("we", "our", or "the app") is a shared custody scheduling app designed to help divorced or separated families coordinate schedules and stay connected with their children. We are committed to protecting the privacy of all users, especially children.')}
+          {p('Kinnect ("we", "our", or "the app") is a shared custody scheduling app designed to help divorced or separated families coordinate schedules and stay connected with their children. We are committed to protecting the privacy of all users, especially children.')}
           {p('This Privacy Policy explains what information we collect, how we use it, and your rights regarding that information.')}
         </>)}
 
         {section('Information We Collect', <>
-          {p('We collect the following types of information when you use HarmonyHub:')}
+          {p('We collect the following types of information when you use Kinnect:')}
           <ul style={{ paddingLeft: '20px', margin: '0 0 12px 0' }}>
             {li('Account information: email address and display name provided during sign-up.')}
             {li('Family data: custody schedule patterns, transition dates, and parent/child role.')}
@@ -73,7 +73,7 @@ function PrivacyPolicy() {
         </>)}
 
         {section('How We Use Your Information', <>
-          {p('Your information is used solely to provide and improve the HarmonyHub service:')}
+          {p('Your information is used solely to provide and improve the Kinnect service:')}
           <ul style={{ paddingLeft: '20px', margin: '0 0 12px 0' }}>
             {li('To display your family\'s schedule, events, and custody calendar.')}
             {li('To enable co-parents to share updates and coordinate in real time.')}
@@ -84,7 +84,7 @@ function PrivacyPolicy() {
         </>)}
 
         {section('Children\'s Privacy', <>
-          {p('HarmonyHub is designed to be used by children under parental supervision. Child accounts are created by linking to a parent\'s family using a family code shared by the parent.')}
+          {p('Kinnect is designed to be used by children under parental supervision. Child accounts are created by linking to a parent\'s family using a family code shared by the parent.')}
           {p('We collect minimal information from child accounts (email and display name only) and do not display advertising to child users. Parents can remove a child account\'s access at any time by unlinking the family.')}
           {p('If you believe a child has provided information without parental consent, please contact us immediately at the email below.')}
         </>)}
@@ -96,7 +96,7 @@ function PrivacyPolicy() {
         </>)}
 
         {section('Third-Party Services', <>
-          {p('HarmonyHub uses the following third-party services:')}
+          {p('Kinnect uses the following third-party services:')}
           <ul style={{ paddingLeft: '20px', margin: '0 0 12px 0' }}>
             {li('Google Firebase — authentication and database (Google Privacy Policy applies).')}
             {li('Capacitor — mobile app framework for Android (no data collection).')}
@@ -128,7 +128,7 @@ function PrivacyPolicy() {
             padding: '16px',
             marginTop: '8px'
           }}>
-            <p style={{ margin: 0, color: '#333', fontWeight: 'bold' }}>HarmonyHub</p>
+            <p style={{ margin: 0, color: '#333', fontWeight: 'bold' }}>Kinnect</p>
             <p style={{ margin: '4px 0 0 0', color: '#667eea' }}>rcbandi10@gmail.com</p>
           </div>
         </>)}
@@ -143,7 +143,7 @@ function PrivacyPolicy() {
           fontSize: '13px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
         }}>
-          © 2025 HarmonyHub. Built with care for families.
+          © 2025 Kinnect. Built with care for families.
         </div>
       </div>
     </div>

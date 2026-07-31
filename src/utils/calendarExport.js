@@ -17,13 +17,13 @@ export function exportToICS(events) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//HarmonyHub//Family Schedule//EN',
+    'PRODID:-//Kinnect//Family Schedule//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
   ];
 
   events.forEach(event => {
-    const uid = `${event.id}@harmonyhub`;
+    const uid = `${event.id}@kinnect`;
     const dtstart = toICSDate(event.date, event.time);
     const isAllDay = !event.time;
 
@@ -58,7 +58,7 @@ export function exportToICS(events) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'harmonyhub-schedule.ics';
+  a.download = 'kinnect-schedule.ics';
   a.click();
   URL.revokeObjectURL(url);
 }
