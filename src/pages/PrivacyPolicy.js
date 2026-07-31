@@ -129,7 +129,7 @@ function PrivacyPolicy() {
             marginTop: '8px'
           }}>
             <p style={{ margin: 0, color: '#333', fontWeight: 'bold' }}>Kinnect</p>
-            <p style={{ margin: '4px 0 0 0', color: '#667eea' }}>rcbandi10@gmail.com</p>
+            <p style={{ margin: '4px 0 0 0', color: '#667eea' }}>kinctinfo@gmail.com</p>
           </div>
         </>)}
 
