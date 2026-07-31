@@ -16,7 +16,7 @@ function CustodyCalendar({ custodySchedule, events = [] }) {
     );
   }
 
-  const { pattern, startDate, parent1Name, parent2Name } = custodySchedule;
+  const { parent1Name, parent2Name } = custodySchedule;
   const parent1Color = '#ff6b9d';
   const parent2Color = '#4facfe';
 
