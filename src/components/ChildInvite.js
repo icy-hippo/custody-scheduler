@@ -11,15 +11,20 @@ function ChildInvite({ familyId, onClose }) {
   };
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(0,0,0,0.5)', display: 'flex',
-      alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px'
-    }}>
-      <div style={{
-        background: 'white', borderRadius: '20px', padding: '32px',
-        maxWidth: '400px', width: '100%', textAlign: 'center'
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.5)', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px'
       }}>
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: 'white', borderRadius: '20px', padding: '32px',
+          maxWidth: '400px', width: '100%', textAlign: 'center',
+          position: 'relative'
+        }}>
         <button onClick={onClose} style={{
           position: 'absolute', top: '16px', right: '16px',
           background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#999'
