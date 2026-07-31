@@ -19,7 +19,7 @@ const requestPermission = async () => {
   return display === 'granted';
 };
 
-// Cancel all previously scheduled HarmonyHub notifications
+// Cancel all previously scheduled Kinnect notifications
 const cancelAll = async () => {
   const plugin = await getPlugin();
   if (!plugin) return;

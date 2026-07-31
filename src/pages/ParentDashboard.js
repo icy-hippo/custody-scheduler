@@ -434,7 +434,7 @@ function ParentDashboard() {
       }}>
         <div style={{ maxWidth: '700px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1 style={{ margin: 0, color: 'white', fontSize: '20px', fontWeight: '800', letterSpacing: '-0.3px' }}>HarmonyHub</h1>
+            <h1 style={{ margin: 0, color: 'white', fontSize: '20px', fontWeight: '800', letterSpacing: '-0.3px' }}>Kinnect</h1>
             <p style={{ margin: '2px 0 0 0', color: 'rgba(255,255,255,0.75)', fontSize: '12px', fontWeight: '500' }}>
               {currentUserName ? `Welcome back, ${currentUserName}` : 'Parent Dashboard'}
             </p>

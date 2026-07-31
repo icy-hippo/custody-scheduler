@@ -8,8 +8,8 @@ import { sendEmailVerification } from 'firebase/auth';
 const PARENT_STEPS = [
   {
     emoji: '👋',
-    title: 'Welcome to HarmonyHub!',
-    body: 'HarmonyHub helps your family stay coordinated — schedules, events, and transitions all in one place.',
+    title: 'Welcome to Kinnect!',
+    body: 'Kinnect helps your family stay coordinated — schedules, events, and transitions all in one place.',
     color: '#667eea',
     bg: '#f0f4ff',
   },
@@ -40,7 +40,7 @@ const PARENT_STEPS = [
   {
     emoji: '🎉',
     title: "You're All Set!",
-    body: "HarmonyHub is ready to use. Link your co-parent from the More tab to start sharing updates in real time.",
+    body: "Kinnect is ready to use. Link your co-parent from the More tab to start sharing updates in real time.",
     color: '#ff6b35',
     bg: '#fff5f0',
   },
@@ -49,8 +49,8 @@ const PARENT_STEPS = [
 const CHILD_STEPS = [
   {
     emoji: '👋',
-    title: 'Hi! Welcome to HarmonyHub!',
-    body: 'HarmonyHub is your personal schedule helper. It shows where you are today, what\'s coming up, and when you move between homes.',
+    title: 'Hi! Welcome to Kinnect!',
+    body: 'Kinnect is your personal schedule helper. It shows where you are today, what\'s coming up, and when you move between homes.',
     color: '#667eea',
     bg: '#f0f4ff',
   },

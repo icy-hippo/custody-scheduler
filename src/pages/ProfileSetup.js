@@ -52,7 +52,7 @@ function ProfileSetup() {
         maxWidth: '500px'
       }}>
         <h2 style={{ marginBottom: '16px', color: '#333', textAlign: 'center' }}>
-          Welcome to HarmonyHub!
+          Welcome to Kinnect!
         </h2>
         <p style={{ marginBottom: '32px', color: '#666', textAlign: 'center' }}>
           Let's set up your profile
