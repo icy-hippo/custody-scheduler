@@ -1,4 +1,4 @@
-package com.harmonyhub.app;
+package io.kinnect.app;
 
 import com.getcapacitor.BridgeActivity;
 
